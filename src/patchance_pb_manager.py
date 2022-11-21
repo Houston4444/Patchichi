@@ -4,7 +4,7 @@ import json
 import logging
 import operator
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Iterator, Union
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
@@ -137,7 +137,7 @@ class PatchancePatchbayManager(PatchbayManager):
         portgroup = ''
         port_type = PortType.AUDIO_JACK
         port_mode = PortMode.OUTPUT
-        port_flags = 0
+        # port_flags = PortMode.OUTPUT
         port_uuid = 0
 
         self.clear_all()
@@ -161,6 +161,9 @@ class PatchancePatchbayManager(PatchbayManager):
                 group_name = tmp_group_name
                 portgroup = ''
                 gp_icon_name = ''
+                port_type = PortType.AUDIO_JACK
+                port_mode = PortMode.OUTPUT
+                port_flags = 0
 
             elif line.startswith(':'):
                 params = line[1:].split(':')
@@ -287,67 +290,88 @@ class PatchancePatchbayManager(PatchbayManager):
 
         for group_name, port_list in gps_and_ports:
             port_list.sort(key=operator.attrgetter('port_id'))
-
-        for physical in (True, False):
-            if physical:
-                contents += ':PHYSICAL\n'
                 
-            for group_name, port_list in gps_and_ports:
-                gp_written = False              
-                last_type_and_mode = (PortType.NULL, PortMode.NULL)
+        for group_name, port_list in gps_and_ports:
+            gp_written = False              
+            last_type_and_mode = (PortType.NULL, PortMode.NULL)
+            physical = False
+            pg_name = ''
 
-                for port in port_list:
-                    if bool(port.flags & JackPortFlag.IS_PHYSICAL) == physical:
-                        if not gp_written:
-                            contents += f'\n::{group_name}\n'
-                            gp_written = True
-                        
-                        if last_type_and_mode != (port.type, port.mode()):
-                            if port.type is PortType.AUDIO_JACK:
-                                if port.flags & JackPortFlag.IS_CONTROL_VOLTAGE:
-                                    contents += ':CV'
-                                else:
-                                    contents += ':AUDIO'
-                            elif port.type is PortType.MIDI_JACK:
-                                contents += ':MIDI'
+            for port in port_list:
+                if not gp_written:
+                    contents += f'\n::{group_name}\n'
+                    gp_written = True
 
-                            contents += f':{port.mode().name}\n'
-                            last_type_and_mode = (port.type, port.mode())
-                        
-                        port_short_name = port.full_name.partition(':')[2]
-                        contents += f'{port_short_name}\n'
-                      
-                # for port_type in PortType:
-                #     for port_mode in PortMode:
-                #         type_mode_written = False
-                #         for port in port_list:
-                #             if (port.type is port_type
-                #                     and port.mode() is port_mode 
-                #                     and bool(port.flags & JackPortFlag.IS_PHYSICAL) == physical):
-                #                 if not gp_written:
-                #                     contents += f'\n::{group_name}\n'
-                #                     gp_written = True
+                    group = self.get_group_from_name(group_name)
+                    if group is not None:
+                        group_attrs = list[str]()
+                        if group.client_icon:
+                            if group._icon_from_metadata:
+                                group_attrs.append(f'ICON_NAME={group.client_icon}')
+                            else:
+                                group_attrs.append(f'CLIENT_ICON={group.client_icon}')
 
-                #                 if not type_mode_written:
-                #                     if port_type is PortType.AUDIO_JACK:
-                #                         if port.flags & JackPortFlag.IS_CONTROL_VOLTAGE:
-                #                             contents += ':CV'
-                #                         else:
-                #                             contents += ':AUDIO'
-                #                     elif port_type is PortType.MIDI_JACK:
-                #                         contents += ':MIDI'
-                #                     else:
-                #                         continue
-                                    
-                #                     contents += f':{port_mode.name}\n'
-                #                     type_mode_written = True
-                                    
-                #                 contents += f'{port.short_name()}\n'
+                        if group.has_gui:
+                            if group.gui_visible:
+                                group_attrs.append('GUI_VISIBLE')
+                            else:
+                                group_attrs.append('GUI_HIDDEN')
+                        if group_attrs:
+                            contents += ':'
+                            contents += ':'.join(group_attrs)
 
-            if physical:
-                contents += '\n:~PHYSICAL\n'
+                if port.flags & JackPortFlag.IS_PHYSICAL:
+                    if not physical:
+                        contents += ':PHYSICAL\n'
+                        physical = True
+                elif physical:
+                    contents += ':~PHYSICAL\n'
+                    physical = False
+
+                if last_type_and_mode != (port.type, port.mode()):
+                    if port.type is PortType.AUDIO_JACK:
+                        if port.flags & JackPortFlag.IS_CONTROL_VOLTAGE:
+                            contents += ':CV'
+                        else:
+                            contents += ':AUDIO'
+                    elif port.type is PortType.MIDI_JACK:
+                        contents += ':MIDI'
+
+                    contents += f':{port.mode().name}\n'
+                    last_type_and_mode = (port.type, port.mode())
+                
+                if port.mdata_portgroup != pg_name:
+                    if port.mdata_portgroup:
+                        contents += f':PORTGROUP={port.mdata_portgroup}\n'
+                    else:
+                        contents += ':~PORTGROUP\n'
+                    pg_name = port.mdata_portgroup
+
+                port_short_name = port.full_name.partition(':')[2]
+                contents += f'{port_short_name}\n'
+                
+                if port.pretty_name or port.order:
+                    port_attrs = list[str]()
+                    if port.pretty_name:
+                        port_attrs.append(f'PRETTY_NAME={port.pretty_name}')
+                    if port.order:
+                        port_attrs.append(f'PORT_ORDER={port.order}')
+                    contents += '\n'
+                    contents += ':'.join(port_attrs)
+
         return contents
-            
+
+    def get_existing_connections(self) -> list[tuple[str, str]]:
+        return_list = list[tuple[str, str]]()
+        for conn in self.connections:
+            return_list.append(
+                (conn.port_out.full_name, conn.port_in.full_name))
+        return return_list
+    
+    def get_existing_positions(self) -> list[GroupPos]:
+        return [gpos for gpos in self.group_positions
+                if gpos.group_name in [g.name for g in self.groups]]
+
     @later_by_batch()
     def rewrite_connections_text(self):
         conns_dict = dict[str, list[str]]()
@@ -370,6 +394,8 @@ class PatchancePatchbayManager(PatchbayManager):
         self.main_win.set_connections_text(contents)
         
         print(self.export_port_list())
+        print(self.get_existing_connections())
+        print(self.get_existing_positions())
     
     def set_group_as_nsm_client(self, group: Group):
         icon_name = self._gp_client_icons.get(group.name)
