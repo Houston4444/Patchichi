@@ -52,7 +52,11 @@
          </font>
         </property>
        </widget>
-       <widget class="QPlainTextEdit" name="plainTextEditConns"/>
+       <widget class="QPlainTextEdit" name="plainTextEditConns">
+        <property name="documentTitle">
+         <string>Connections</string>
+        </property>
+       </widget>
       </widget>
       <widget class="PatchGraphicsView" name="graphicsView">
        <property name="styleSheet">
@@ -122,6 +126,8 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionMainMenu"/>
+   <addaction name="actionSaveScene"/>
+   <addaction name="actionLoadScene"/>
   </widget>
   <action name="actionShowMenuBar">
    <property name="checkable">
@@ -172,6 +178,28 @@
    </property>
    <property name="text">
     <string>Menu</string>
+   </property>
+  </action>
+  <action name="actionSaveScene">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
+   <property name="text">
+    <string>Save Scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoadScene">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>Load Scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>
