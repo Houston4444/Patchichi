@@ -56,9 +56,11 @@ class MainWindow(QMainWindow):
         
         self._normal_screen_maximized = False
         self._normal_screen_had_menu = False
-        
+
         patchbay_tools_act = self.ui.toolBar.addWidget(PatchbayToolsWidget())
         self.patchbay_tools = self.ui.toolBar.widgetForAction(patchbay_tools_act)
+        self.ui.toolBar.set_default_displayed_widgets(
+            ToolDisplayed.PORT_TYPES_VIEW| ToolDisplayed.ZOOM_SLIDER)
         
         self.ui.plainTextEditPorts.textChanged.connect(self._text_changed)
         
@@ -88,21 +90,12 @@ class MainWindow(QMainWindow):
         self.ui.menubar.addMenu(main.patchbay_manager.canvas_menu)
         self.main_menu.insertMenu(
             self.last_separator, main.patchbay_manager.canvas_menu)
-        
-        default_disp_widg = (
-            ToolDisplayed.PORT_TYPES_VIEW
-            | ToolDisplayed.ZOOM_SLIDER
-            | ToolDisplayed.TRANSPORT_CLOCK
-            | ToolDisplayed.TRANSPORT_PLAY_STOP
-            | ToolDisplayed.BUFFER_SIZE
-            | ToolDisplayed.SAMPLERATE
-            | ToolDisplayed.XRUNS
-            | ToolDisplayed.DSP_LOAD)
-        
-        default_disp_str = self.settings.value('tool_bar/elements', '', type=str)
 
         self.ui.toolBar.set_default_displayed_widgets(
-            default_disp_widg.filtered_by_string(default_disp_str))
+            ToolDisplayed.PORT_TYPES_VIEW
+            | ToolDisplayed.ZOOM_SLIDER)
+        
+        self.ui.splitterMainVsCanvas.setSizes([10, 90])
 
     def _menubar_shown_toggled(self, state: int):
         self.ui.menubar.setVisible(bool(state))

@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, Iterator, Union
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
-from patchbay.base_elements import GroupPos, JackPortFlag, Port, PortgroupMem, Group
+from patchbay.base_elements import (
+    GroupPos, JackPortFlag, Port, PortgroupMem, Group, ToolDisplayed)
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -121,8 +122,6 @@ class PatchichiPatchbayManager(PatchbayManager):
 
     def refresh(self):
         super().refresh()
-        if self.jack_mng is not None:
-            self.jack_mng.init_the_graph()
     
     def update_from_text(self, text: str):
         def _log(string: str):
@@ -137,7 +136,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         portgroup = ''
         port_type = PortType.AUDIO_JACK
         port_mode = PortMode.OUTPUT
-        # port_flags = PortMode.OUTPUT
         port_uuid = 0
 
         self.clear_all()
@@ -226,8 +224,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                             port_uuid,
                             JACK_METADATA_PRETTY_NAME,
                             param.partition('=')[2])
-                        
-                    
             else:
                 if not group_name:
                     _log('No group name set')
@@ -403,40 +399,19 @@ class PatchichiPatchbayManager(PatchbayManager):
             group.client_icon = icon_name
             if '.' in group.name:
                 group.display_name = group.name.partition('.')[2]
-    
-    def change_buffersize(self, buffer_size: int):
-        super().change_buffersize(buffer_size)
-        self.jack_mng.set_buffer_size(buffer_size)
-    
-    def transport_play_pause(self, play: bool):
-        if play:
-            self.jack_mng.transport_start()
-        else:
-            self.jack_mng.transport_pause()
-        
-    def transport_stop(self):
-        self.jack_mng.transport_stop()
-
-    def transport_relocate(self, frame: int):
-        self.jack_mng.transport_relocate(frame)
 
     def finish_init(self, main: 'Main'):
-        self.jack_mng = main.jack_manager
         self.set_main_win(main.main_win)
         self._setup_canvas()
 
         self.set_canvas_menu(CanvasMenu(self))
         self.set_tools_widget(main.main_win.patchbay_tools)
         self.set_filter_frame(main.main_win.ui.filterFrame)
+        self.set_options_dialog(
+            CanvasOptionsDialog(self.main_win, self, self._settings))
         
-        if self.jack_mng.jack_running:
-            self.server_started()
-            self.sample_rate_changed(self.jack_mng.get_sample_rate())
-            self.buffer_size_changed(self.jack_mng.get_buffer_size())
-        else:
-            self.server_stopped()
-
-        self.set_options_dialog(CanvasOptionsDialog(self.main_win, self, self._settings))
+        # prevent 'Jack is not running' red label to be displayed
+        self.server_started()
 
     def save_positions(self):        
         gposs_as_dicts = [gpos.as_serializable_dict()

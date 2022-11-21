@@ -35,7 +35,6 @@ from PyQt5.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
 
 from main_win import MainWindow
 from patchichi_pb_manager import PatchichiPatchbayManager
-from jack_manager import JackManager
 
 
 @dataclass
@@ -43,7 +42,6 @@ class Main:
     app: QApplication
     main_win: MainWindow
     patchbay_manager: PatchichiPatchbayManager
-    jack_manager: JackManager
     settings: QSettings
 
 
@@ -106,16 +104,14 @@ def main_loop():
     settings = QSettings()
     main_win = MainWindow()
     pb_manager = PatchichiPatchbayManager(settings)
-    jack_manager = JackManager(pb_manager)
 
-    main = Main(app, main_win, pb_manager, jack_manager, settings)
+    main = Main(app, main_win, pb_manager, settings)
     pb_manager.finish_init(main)
     main_win.finish_init(main)
     main_win.show()
 
     app.exec()
     settings.sync()
-    jack_manager.exit()
     pb_manager.save_positions()
     del app
 
