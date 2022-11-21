@@ -12,7 +12,7 @@ from local_jacklib.helpers import c_char_p_p_to_list
 
 from patchbay.base_elements import TransportPosition
 if TYPE_CHECKING:
-    from patchance_pb_manager import PatchancePatchbayManager
+    from patchichi_pb_manager import PatchichiPatchbayManager
 
 PORT_TYPE_NULL = 0
 PORT_TYPE_AUDIO = 1
@@ -74,7 +74,7 @@ class Metadata:
 
 
 class JackManager:
-    def __init__(self, patchbay_manager: 'PatchancePatchbayManager'):
+    def __init__(self, patchbay_manager: 'PatchichiPatchbayManager'):
         self.jack_running = False
         self.jack_client = None
         self.patchbay_manager = patchbay_manager
@@ -223,7 +223,7 @@ class JackManager:
 
         with suppress_stdout_stderr():
             self.jack_client = jacklib.client_open(
-                "Patchance",
+                "Patchichi",
                 jacklib.JackNoStartServer | jacklib.JackSessionID,
                 None)
 

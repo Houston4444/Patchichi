@@ -1,11 +1,11 @@
 #!/usr/bin/make -f
-# Makefile for Patchance #
+# Makefile for Patchichi #
 # ---------------------- #
 # Created by houston4444
 #
 PREFIX ?= /usr/local
 DESTDIR =
-DEST_PATCHANCE := $(DESTDIR)$(PREFIX)/share/patchance
+DEST_PATCHICHI := $(DESTDIR)$(PREFIX)/share/patchichi
 
 LINK = ln -s -f
 PYUIC := pyuic5
@@ -45,13 +45,13 @@ src/resources_rc.py: resources/resources.qrc
 # ---------------------
 # UI code
 
-UI: mkdir_ui patchance 
+UI: mkdir_ui patchichi 
 
 mkdir_ui:
 	@if ! [ -e src/ui ];then mkdir -p src/ui; fi
 
-patchance: src/ui/main_win.py \
-		   src/ui/about_patchance.py
+patchichi: src/ui/main_win.py \
+		   src/ui/about_patchichi.py
 
 src/ui/%.py: resources/ui/%.ui
 	$(PYUIC) $< -o $@
@@ -64,8 +64,8 @@ PY_CACHE:
 
 LOCALE: locale
 
-locale: locale/patchance_en.qm \
-		locale/patchance_fr.qm \
+locale: locale/patchichi_en.qm \
+		locale/patchichi_fr.qm \
 
 locale/%.qm: locale/%.ts
 	$(LRELEASE) $< -qm $@
@@ -100,62 +100,62 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/
 	install -d $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 	install -d $(DESTDIR)$(PREFIX)/share/applications/
-	install -d $(DEST_PATCHANCE)/
-	install -d $(DEST_PATCHANCE)/locale/
-	install -d $(DEST_PATCHANCE)/$(PATCHBAY_DIR)/
-	install -d $(DEST_PATCHANCE)/$(PATCHBAY_DIR)/locale
+	install -d $(DEST_PATCHICHI)/
+	install -d $(DEST_PATCHICHI)/locale/
+	install -d $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
+	install -d $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/locale
 	
 # 	# Copy Desktop Files
 	install -m 644 data/share/applications/*.desktop \
 		$(DESTDIR)$(PREFIX)/share/applications/
 
 # 	# Install icons
-	install -m 644 resources/main_icon/16x16/patchance.png   \
+	install -m 644 resources/main_icon/16x16/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/16x16/apps/
-	install -m 644 resources/main_icon/24x24/patchance.png   \
+	install -m 644 resources/main_icon/24x24/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/
-	install -m 644 resources/main_icon/32x32/patchance.png   \
+	install -m 644 resources/main_icon/32x32/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/32x32/apps/
-	install -m 644 resources/main_icon/48x48/patchance.png   \
+	install -m 644 resources/main_icon/48x48/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/
-	install -m 644 resources/main_icon/64x64/patchance.png   \
+	install -m 644 resources/main_icon/64x64/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/
-	install -m 644 resources/main_icon/96x96/patchance.png   \
+	install -m 644 resources/main_icon/96x96/patchichi.png   \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/96x96/apps/
-	install -m 644 resources/main_icon/128x128/patchance.png \
+	install -m 644 resources/main_icon/128x128/patchichi.png \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/128x128/apps/
-	install -m 644 resources/main_icon/256x256/patchance.png \
+	install -m 644 resources/main_icon/256x256/patchichi.png \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/
 
 # 	# Install icons, scalable
-	install -m 644 resources/main_icon/scalable/patchance.svg \
+	install -m 644 resources/main_icon/scalable/patchichi.svg \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 
 	# Copy patchbay themes
-	cp -r HoustonPatchbay/themes $(DEST_PATCHANCE)/$(PATCHBAY_DIR)/
+	cp -r HoustonPatchbay/themes $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 
 # 	# Install main code
-	cp -r src $(DEST_PATCHANCE)/
-	rm $(DEST_PATCHANCE)/src/patchbay
-	cp -r $(PATCHBAY_DIR)/patchbay $(DEST_PATCHANCE)/src/
+	cp -r src $(DEST_PATCHICHI)/
+	rm $(DEST_PATCHICHI)/src/patchbay
+	cp -r $(PATCHBAY_DIR)/patchbay $(DEST_PATCHICHI)/src/
 	
 # 	# compile python files
-	$(PYTHON) -m compileall $(DEST_PATCHANCE)/src/
+	$(PYTHON) -m compileall $(DEST_PATCHICHI)/src/
 	
 # 	# install local manual
-# 	cp -r manual $(DEST_PATCHANCE)/
+# 	cp -r manual $(DEST_PATCHICHI)/
 		
 #   # install main bash scripts to bin
-	install -m 755 data/patchance  $(DESTDIR)$(PREFIX)/bin/
-	sed -i "s?X-PREFIX-X?$(PREFIX)?" $(DESTDIR)$(PREFIX)/bin/patchance
+	install -m 755 data/patchichi  $(DESTDIR)$(PREFIX)/bin/
+	sed -i "s?X-PREFIX-X?$(PREFIX)?" $(DESTDIR)$(PREFIX)/bin/patchichi
 
 # 	# Install Translations
-	install -m 644 locale/*.qm $(DEST_PATCHANCE)/locale/
-	install -m 644 $(PATCHBAY_DIR)/locale/*.qm $(DEST_PATCHANCE)/$(PATCHBAY_DIR)/locale/
+	install -m 644 locale/*.qm $(DEST_PATCHICHI)/locale/
+	install -m 644 $(PATCHBAY_DIR)/locale/*.qm $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/locale/
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/patchance
-	rm -f $(DESTDIR)$(PREFIX)/share/applications/patchance.desktop
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/*/apps/patchance.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/patchance.svg
-	rm -rf $(DEST_PATCHANCE)
+	rm -f $(DESTDIR)$(PREFIX)/bin/patchichi
+	rm -f $(DESTDIR)$(PREFIX)/share/applications/patchichi.desktop
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/*/apps/patchichi.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/patchichi.svg
+	rm -rf $(DEST_PATCHICHI)

@@ -1,9 +1,9 @@
-# ---  INSTALL for PATCHANCE  ---
+# ---  INSTALL for PATCHICHI  ---
 
-Before installing, please uninstall any existing Patchance installation: <br/>
+Before installing, please uninstall any existing Patchichi installation: <br/>
 `$ [sudo] make uninstall`
 
-To install Patchance, simply run as usual: <br/>
+To install Patchichi, simply run as usual: <br/>
 `$ make` <br/>
 `$ [sudo] make install`
 
@@ -12,14 +12,14 @@ If you don't have 'lrelease' executable but 'lrelease-qt5' use:
 `$ make LRELEASE=lrelease-qt5` <br/>
 `$ [sudo] make install`
 
-You can run Patchance without install, by using instead: <br/>
+You can run Patchichi without install, by using instead: <br/>
 `$ make` <br/>
-`$ ./src/patchance.py`
+`$ ./src/patchichi.py`
 
 Packagers can make use of the 'PREFIX' and 'DESTDIR' variable during install, like this: <br/>
 `$ make install PREFIX=/usr DESTDIR=./test-dir`
 
-To uninstall Patchance, run: <br/>
+To uninstall Patchichi, run: <br/>
 `$ [sudo] make uninstall`
 <br/>
 

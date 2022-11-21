@@ -1,10 +1,10 @@
 [Desktop Entry]
-Name=Patchance
-GenericName=Patchance
+Name=Patchichi
+GenericName=Patchichi
 Comment=Jack Patchbay
 Comment[fr]=Baie de brassage pour JACK
-Exec=patchance
-Icon=patchance
+Exec=patchichi
+Icon=patchichi
 Terminal=false
 Type=Application
 Categories=AudioVideo;Audio;Qt;

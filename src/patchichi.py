@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 
-APP_TITLE = 'Patchance'
+APP_TITLE = 'Patchichi'
 VERSION = (0, 1, 0)
 
 import sys
@@ -15,7 +15,7 @@ for arg in sys.argv[1:]:
     if arg == '--help':
         info = (
             "Patchbay application for JACK\n"
-            "Usage: patchance [--help] [--version]\n"
+            "Usage: patchichi [--help] [--version]\n"
             "  --help     show this help\n"
             "  --version  print program version\n"
         )
@@ -34,7 +34,7 @@ from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
 
 from main_win import MainWindow
-from patchance_pb_manager import PatchancePatchbayManager
+from patchichi_pb_manager import PatchichiPatchbayManager
 from jack_manager import JackManager
 
 
@@ -42,7 +42,7 @@ from jack_manager import JackManager
 class Main:
     app: QApplication
     main_win: MainWindow
-    patchbay_manager: PatchancePatchbayManager
+    patchbay_manager: PatchichiPatchbayManager
     jack_manager: JackManager
     settings: QSettings
 
@@ -105,7 +105,7 @@ def main_loop():
 
     settings = QSettings()
     main_win = MainWindow()
-    pb_manager = PatchancePatchbayManager(settings)
+    pb_manager = PatchichiPatchbayManager(settings)
     jack_manager = JackManager(pb_manager)
 
     main = Main(app, main_win, pb_manager, jack_manager, settings)

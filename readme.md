@@ -1,9 +1,9 @@
-# ![Patchance Logo](https://raw.githubusercontent.com/Houston4444/Patchance/master/resources/main_icon/128x128/patchance.png) Patchance
+# ![Patchichi Logo](https://raw.githubusercontent.com/Houston4444/Patchichi/master/resources/main_icon/128x128/patchichi.png) Patchichi
 
-Patchance is one more JACK patchbay GUI for GNU/Linux systems, but it could be adapted to Mac and Windows with little effort.
+Patchichi is one more JACK patchbay GUI for GNU/Linux systems, but it could be adapted to Mac and Windows with little effort.
 It is a direct alternative to [Catia](https://github.com/falkTX/Catia) or [Patchage](https://github.com/drobilla/patchage).
 
-![Screenshot](https://raw.githubusercontent.com/Houston4444/Patchance/master/screenshots/yellow_boards.png)
+![Screenshot](https://raw.githubusercontent.com/Houston4444/Patchichi/master/screenshots/yellow_boards.png)
 
 ## Features:
 * Stereo detection for port grouping with their name, for faster connections and readability
@@ -20,7 +20,7 @@ It is a direct alternative to [Catia](https://github.com/falkTX/Catia) or [Patch
 
 As [RaySession](https://github.com/Houston4444/RaySession), it is based on the [HoustonPatchbay](https://github.com/Houston4444/HoustonPatchbay) submodule which provides portgroups, wrappable boxes, editable themes and many other nice features.
 
-__RaySession__ users won't find any interest to use __Patchance__, __Patchance__ is for theses ones who think they don't need this session manager.
+__RaySession__ users won't find any interest to use __Patchichi__, __Patchichi__ is for theses ones who think they don't need this session manager.
 
 It is a simple app for __HoustonPatchbay__ and it shows the possibility for any python Qt app to implement this submodule easily.
 
@@ -34,5 +34,5 @@ I think this is also a good approach for first-time users, before they realise t
 
 ## History
 
-__Patchance__ is not directly a __Catia__ fork, but it comes from.
+__Patchichi__ is not directly a __Catia__ fork, but it comes from.
 Originally, the _patchanvas_ module (present in HousPatchbay submodule) has been copied from __Carla__ code. This module was previously copied by @falkTX from __Cadence__ (containing __Catia__ ) to __Carla__.

@@ -24,15 +24,15 @@ import xdg
 
 if TYPE_CHECKING:
     from main_win import MainWindow
-    from patchance import Main
+    from patchichi import Main
 
 _logger = logging.getLogger(__name__)
 
 MEMORY_FILE = 'canvas.json'
 
 
-class PatchanceCallbacker(Callbacker):
-    def __init__(self, manager: 'PatchancePatchbayManager'):
+class PatchichiCallbacker(Callbacker):
+    def __init__(self, manager: 'PatchichiPatchbayManager'):
         super().__init__(manager)
 
         if TYPE_CHECKING:
@@ -53,7 +53,7 @@ class PatchanceCallbacker(Callbacker):
                 self.mng.rewrite_connections_text()
                 break
 
-class PatchancePatchbayManager(PatchbayManager):
+class PatchichiPatchbayManager(PatchbayManager):
     def __init__(self, settings: Union[QSettings, None] =None):
         super().__init__(settings)
         self._settings = settings
@@ -116,7 +116,7 @@ class PatchancePatchbayManager(PatchbayManager):
 
         self.app_init(self.main_win.ui.graphicsView,
                       theme_paths,
-                      callbacker=PatchanceCallbacker(self),
+                      callbacker=PatchichiCallbacker(self),
                       default_theme_name='Yellow Boards')
 
     def refresh(self):

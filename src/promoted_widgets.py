@@ -13,9 +13,9 @@ class PatchFilterFrame(FilterFrame):
     pass
 
         
-class PatchanceGraphicsView(PatchGraphicsView):
+class PatchichiGraphicsView(PatchGraphicsView):
     pass
 
 
-class PatchanceToolBar(PatchbayToolBar):
+class PatchichiToolBar(PatchbayToolBar):
     pass

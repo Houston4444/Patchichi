@@ -13,7 +13,7 @@ from ui.main_win import Ui_MainWindow
 
 
 if TYPE_CHECKING:
-    from patchance import Main
+    from patchichi import Main
 
 
 class MainWindow(QMainWindow):
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.ui.filterFrame.setVisible(False)
         self.ui.actionShowMenuBar.toggled.connect(self._menubar_shown_toggled)
         self.ui.actionQuit.triggered.connect(QApplication.quit)
-        self.ui.actionAboutPatchance.triggered.connect(self._show_about_dialog)
+        self.ui.actionAboutPatchichi.triggered.connect(self._show_about_dialog)
         self.ui.actionAboutQt.triggered.connect(QApplication.aboutQt)
 
         filter_bar_shortcut = QShortcut('Ctrl+F', self)

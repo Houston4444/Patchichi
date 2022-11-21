@@ -97,13 +97,13 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAboutPatchance"/>
+    <addaction name="actionAboutPatchichi"/>
     <addaction name="actionAboutQt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="PatchanceToolBar" name="toolBar">
+  <widget class="PatchichiToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -153,13 +153,13 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionAboutPatchance">
+  <action name="actionAboutPatchichi">
    <property name="icon">
     <iconset resource="../resources.qrc">
-     <normaloff>:/main_icon/scalable/patchance.svg</normaloff>:/main_icon/scalable/patchance.svg</iconset>
+     <normaloff>:/main_icon/scalable/patchichi.svg</normaloff>:/main_icon/scalable/patchichi.svg</iconset>
    </property>
    <property name="text">
-    <string>About Patchance</string>
+    <string>About Patchichi</string>
    </property>
   </action>
   <action name="actionAboutQt">
@@ -216,7 +216,7 @@
    <header>promoted_widgets</header>
   </customwidget>
   <customwidget>
-   <class>PatchanceToolBar</class>
+   <class>PatchichiToolBar</class>
    <extends>QToolBar</extends>
    <header>promoted_widgets</header>
   </customwidget>

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This is a little script for refresh raysession.pro and update .ts files.
+# This is a little script for refresh patchichi.pro and update .ts files.
 # TRANSLATOR: if you want to translate the program, you don't need to run it !
 
 contents=""
@@ -27,11 +27,11 @@ done
 
 
 contents+="
-TRANSLATIONS += patchance_en.ts
-TRANSLATIONS += patchance_fr.ts
+TRANSLATIONS += patchichi_en.ts
+TRANSLATIONS += patchichi_fr.ts
 "
 
-echo "$contents" > "$locale_root/patchance.pro"
+echo "$contents" > "$locale_root/patchichi.pro"
 
-pylupdate5 "$locale_root/patchance.pro"
+pylupdate5 "$locale_root/patchichi.pro"
 

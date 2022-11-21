@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DialogAboutPatchance</class>
- <widget class="QDialog" name="DialogAboutPatchance">
+ <class>DialogAboutPatchichi</class>
+ <widget class="QDialog" name="DialogAboutPatchichi">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>About Patchance</string>
+   <string>About Patchichi</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -28,7 +28,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../resources.qrc">:/main_icon/128x128/patchance.png</pixmap>
+        <pixmap resource="../resources.qrc">:/main_icon/128x128/patchichi.png</pixmap>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -40,7 +40,7 @@
        <item>
         <widget class="QLabel" name="labelRayAndVersion">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Patchance&lt;/span&gt;&lt;/p&gt;&lt;p&gt;version : %s&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Patchichi&lt;/span&gt;&lt;/p&gt;&lt;p&gt;version : %s&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -50,7 +50,7 @@
        <item>
         <widget class="QLabel" name="labelAllText">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Patchance is a python Qt application to manage JACK connections.&lt;/p&gt;&lt;p&gt;If you want the same patchbay with session management, you can use RaySession instead.&lt;/p&gt;&lt;p&gt;It uses the  HoustonPatchbay submodule for the canvas.&lt;br/&gt;&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;Copyright (C) 2022-2022 houston4444&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Patchichi is a python Qt application to manage JACK connections.&lt;/p&gt;&lt;p&gt;If you want the same patchbay with session management, you can use RaySession instead.&lt;/p&gt;&lt;p&gt;It uses the  HoustonPatchbay submodule for the canvas.&lt;br/&gt;&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;Copyright (C) 2022-2022 houston4444&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -83,7 +83,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DialogAboutPatchance</receiver>
+   <receiver>DialogAboutPatchichi</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -99,7 +99,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DialogAboutPatchance</receiver>
+   <receiver>DialogAboutPatchichi</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
