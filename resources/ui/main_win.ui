@@ -45,7 +45,7 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QPlainTextEdit" name="plainTextEditPorts">
+       <widget class="CodeEditor" name="plainTextEditPorts">
         <property name="font">
          <font>
           <family>Noto Mono</family>
@@ -58,21 +58,42 @@
         </property>
        </widget>
       </widget>
-      <widget class="PatchGraphicsView" name="graphicsView">
-       <property name="styleSheet">
-        <string notr="true">QGraphicsView{border: none}</string>
-       </property>
+      <widget class="QFrame" name="frameGraphicsView">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="PatchGraphicsView" name="graphicsView">
+          <property name="styleSheet">
+           <string notr="true">QGraphicsView{border: none}</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="PatchFilterFrame" name="filterFrame">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="PatchFilterFrame" name="filterFrame">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
      </widget>
     </item>
    </layout>
@@ -114,7 +135,7 @@
     <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -126,8 +147,8 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionMainMenu"/>
-   <addaction name="actionSaveScene"/>
    <addaction name="actionLoadScene"/>
+   <addaction name="actionSaveScene"/>
   </widget>
   <action name="actionShowMenuBar">
    <property name="checkable">
@@ -220,6 +241,11 @@
   <customwidget>
    <class>PatchichiToolBar</class>
    <extends>QToolBar</extends>
+   <header>promoted_widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>CodeEditor</class>
+   <extends>QPlainTextEdit</extends>
    <header>promoted_widgets</header>
   </customwidget>
  </customwidgets>

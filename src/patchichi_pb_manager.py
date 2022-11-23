@@ -136,6 +136,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         portgroup = ''
         port_type = PortType.AUDIO_JACK
         port_mode = PortMode.OUTPUT
+        port_flags = JackPortFlag.IS_OUTPUT
         port_uuid = 0
 
         self.clear_all()
