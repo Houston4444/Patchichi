@@ -44,17 +44,17 @@ class PatchichiCallbacker(Callbacker):
         port_out = self.mng.get_port_from_id(group_out_id, port_out_id)
         port_in = self.mng.get_port_from_id(group_in_id, port_in_id)
         self.mng.add_connection(port_out.full_name, port_in.full_name)
-        self.mng.rewrite_connections_text()
 
     def _ports_disconnect(self, connection_id: int):
         for conn in self.mng.connections:
             if conn.connection_id == connection_id:
                 self.mng.remove_connection(
                     conn.port_out.full_name, conn.port_in.full_name)
-                self.mng.rewrite_connections_text()
                 break
 
 class PatchichiPatchbayManager(PatchbayManager):
+    main_win: 'MainWindow'
+    
     def __init__(self, settings: Union[QSettings, None] =None):
         super().__init__(settings)
         self._settings = settings
@@ -65,7 +65,8 @@ class PatchichiPatchbayManager(PatchbayManager):
         self._gp_client_icons = dict[str, str]()
         
         if settings is not None:
-            self._memory_path = Path(settings.fileName()).parent.joinpath(MEMORY_FILE)
+            self._memory_path = Path(
+                settings.fileName()).parent.joinpath(MEMORY_FILE)
 
             try:
                 with open(self._memory_path, 'r') as f:                
@@ -85,7 +86,8 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                 for gpos in gposs:
                     if isinstance(gpos, dict):
-                        self.group_positions.append(GroupPos.from_serialized_dict(gpos))
+                        self.group_positions.append(
+                            GroupPos.from_serialized_dict(gpos))
             
             if 'portgroups' in json_dict.keys():
                 pg_mems = json_dict['portgroups']
@@ -126,7 +128,9 @@ class PatchichiPatchbayManager(PatchbayManager):
     def update_from_text(self, text: str):
         def _log(string: str):
             _logger.warning(f'line {line_n}:{string}')
+            log_lines.append(f'line {line_n} : {string}')
 
+        log_lines = list[str]() 
         group_names_added = set[str]()
         groups_added = set[int]()
         line_n = 0
@@ -236,7 +240,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
                 full_port_name = f"{group_name}:{line}"
                 if full_port_name in added_ports:
-                    _log(f'Port "{full_port_name}" already added !')
+                    _log(f'Port "{full_port_name}" is already present !')
                     continue
 
                 added_ports.add(full_port_name)
@@ -283,6 +287,8 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         self.optimize_operation(False)
         self.redraw_all_groups()
+        
+        self.main_win.set_logs_text('\n'.join(log_lines))
     
     def export_port_list(self) -> str:
         contents = ''
@@ -400,8 +406,7 @@ class PatchichiPatchbayManager(PatchbayManager):
             for port_in in ports_in:
                 contents += f":> {port_in}\n"
         
-        print('skdfj', conns_dict)        
-        self.main_win.set_connections_text(contents)
+        self.main_win.set_logs_text(contents)
         
         print(self.export_port_list())
         print(self.get_existing_connections())

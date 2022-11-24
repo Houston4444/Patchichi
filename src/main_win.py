@@ -79,7 +79,16 @@ class MainWindow(QMainWindow):
 
         if geom:
             self.restoreGeometry(geom)
-            
+        
+        main_splitter_sizes = self.settings.value(
+            'MainWindow/splitter_canvas_sizes', [273, 1115], type=list)
+        self.ui.splitterMainVsCanvas.setSizes(
+            [int(s) for s in main_splitter_sizes])
+        port_logs_sizes = self.settings.value(
+            'MainWindow/splitter_portlogs_sizes', [687, 139], type=list)
+        self.ui.splitterPortsVsLogs.setSizes(
+            [int(s) for s in port_logs_sizes])
+
         self._normal_screen_maximized = self.isMaximized()
         
         show_menubar = self.settings.value(
@@ -95,7 +104,7 @@ class MainWindow(QMainWindow):
             ToolDisplayed.PORT_TYPES_VIEW
             | ToolDisplayed.ZOOM_SLIDER)
         
-        self.ui.splitterMainVsCanvas.setSizes([10, 90])
+        # self.ui.splitterMainVsCanvas.setSizes([10, 90])
 
     def _menubar_shown_toggled(self, state: int):
         self.ui.menubar.setVisible(bool(state))
@@ -138,15 +147,18 @@ class MainWindow(QMainWindow):
     def toggle_filter_frame_visibility(self):
         self.ui.filterFrame.setVisible(
             not self.ui.filterFrame.isVisible())
-    
-    def set_connections_text(self, text: str):
-        self.ui.plainTextEditConns.setPlainText(text)
-    
+
+    def set_logs_text(self, text: str):
+        self.ui.textEditLogs.setPlainText(text)
+
     def closeEvent(self, event):
         self.settings.setValue('MainWindow/geometry', self.saveGeometry())
         self.settings.setValue(
-            'tool_bar/elements',
-            self.ui.toolBar.get_displayed_widgets().to_save_string())
+            'MainWindow/splitter_canvas_sizes',
+            self.ui.splitterMainVsCanvas.sizes())
+        self.settings.setValue(
+            'MainWindow/splitter_portlogs_sizes',
+            self.ui.splitterPortsVsLogs.sizes())
     
         super().closeEvent(event)
     

@@ -14,7 +14,7 @@ for arg in sys.argv[1:]:
         sys.exit(0)
     if arg == '--help':
         info = (
-            "Patchbay application for JACK\n"
+            "Abstract JACK patchbay application\n"
             "Usage: patchichi [--help] [--version]\n"
             "  --help     show this help\n"
             "  --version  print program version\n"

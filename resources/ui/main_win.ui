@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>HoustonVatil</string>
+   <string>Patchichi</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -41,21 +41,62 @@
       <property name="childrenCollapsible">
        <bool>true</bool>
       </property>
-      <widget class="QSplitter" name="splitterPortsVsConns">
+      <widget class="QSplitter" name="splitterPortsVsLogs">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="CodeEditor" name="plainTextEditPorts">
-        <property name="font">
-         <font>
-          <family>Noto Mono</family>
-         </font>
-        </property>
+       <property name="handleWidth">
+        <number>2</number>
+       </property>
+       <widget class="QFrame" name="frameEditor">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Editor</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CodeEditor" name="plainTextEditPorts">
+           <property name="font">
+            <font>
+             <family>Noto Mono</family>
+            </font>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-       <widget class="QPlainTextEdit" name="plainTextEditConns">
-        <property name="documentTitle">
-         <string>Connections</string>
-        </property>
+       <widget class="QFrame" name="frameLogs">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Logs</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="textEditLogs">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="documentTitle">
+            <string>Logs</string>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
       <widget class="QFrame" name="frameGraphicsView">
