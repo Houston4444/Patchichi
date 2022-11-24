@@ -1,14 +1,24 @@
 
 from dataclasses import dataclass
-from operator import is_
-from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget
+from enum import Enum
+from telnetlib import LINEMODE
+from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget, QCompleter, QApplication
 from PyQt5.QtGui import (
-    QPaintEvent, QColor, QPainter, QResizeEvent, QFont,
+    QPaintEvent, QColor, QPainter, QResizeEvent, QFont, QFocusEvent,
+    QKeyEvent,
     QTextFormat, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QTextDocument)
 from PyQt5.QtCore import Qt, QRect, QSize, QRegularExpression
 from patchbay.patchcanvas.init_values import BoxLayoutMode
 
 from string_sep import string_sep, PRE_ATTRIBUTES, POST_ATTRIBUTES
+
+
+class LineMode(Enum):
+    NONE = 0
+    GROUP = 1
+    ATTR = 2
+    PORT = 3
+
 
 # Code translated from C++ from 
 # https://doc.qt.io/qt-6/qtwidgets-widgets-codeeditor-example.html
@@ -17,17 +27,22 @@ class CodeEditor(QPlainTextEdit):
     def __init__(self, parent):
         super().__init__(parent)
         
-        self.setStyleSheet('QPlainTextEdit{background-color:#1e1e1e; color:white}')
+        self.setStyleSheet(
+            'QPlainTextEdit{background-color:#1e1e1e; color:white}')
         self._line_number_area = LineNumberArea(self)
 
-        self.blockCountChanged.connect(self._update_line_number_area_width)
+        self.blockCountChanged.connect(self._block_count_changed)
         self.updateRequest.connect(self._update_line_number_area)
-        # self.cursorPositionChanged.connect(self._highlight_current_line)
+        self.cursorPositionChanged.connect(self._update_completer_mode)
         
-        self._update_line_number_area_width(0)
+        self._update_line_number_area_width()
         
         self._highlighter = Highlighter(self.document())
-        # self._highlight_current_line()
+
+        self._completer_mode = LineMode.NONE
+        self._port_models = list[str]()
+        self._completer = Completer([], self)
+        self._set_completer(self._completer_mode)
 
     def line_number_area_paint_event(self, event: QPaintEvent):
         painter = QPainter(self._line_number_area)
@@ -67,110 +82,16 @@ class CodeEditor(QPlainTextEdit):
     def resizeEvent(self, event: QResizeEvent) -> None:
         super().resizeEvent(event)
     
-    def _update_line_number_area_width(self, new_block_count: int):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
-        
+    def _block_count_changed(self, new_block_count:int):
+        self._update_line_number_area_width()
+        if self._completer_mode is LineMode.PORT:
+            cursor = self.textCursor()
+            block = cursor.block().previous()
+            if not block.text().startswith(':'):
+                self._set_completer(LineMode.PORT)
     
-    def _highlight_current_line(self):
-        extra_selections = list[QTextEdit.ExtraSelection]()
-        
-        if not self.isReadOnly():
-            sel_box = QTextEdit.ExtraSelection()
-            line_color = QColor(255, 255, 80, 20)
-            sel_box.format.setBackground(line_color)
-            sel_box.format.setProperty(QTextFormat.FullWidthSelection, True)
-            sel_box.cursor = self.textCursor()
-            sel_box.cursor.clearSelection()
-            extra_selections.append(sel_box)
-        
-        block = self.firstVisibleBlock()
-        while block.isValid():
-            GROUP_COLOR = QColor(100, 214, 189)
-            ATTR_PRE_COLOR = QColor(150, 211, 241)
-            ATTR_POST_COLOR = QColor(220, 220, 170)
-            ATTR_ERR_COLOR = QColor(255, 0, 0)
-            VALUE_COLOR = QColor(206, 145, 120)
-            # text_color = None
-            str_role = ''
-            if block.text().startswith('::'):
-                # text_color = QColor(100, 214, 189)
-                str_role = '::'
-            elif block.text().startswith(':'):
-                # text_color = QColor(150, 211, 241)
-                str_role = ':'
-
-            if str_role:
-                start = block.position()
-                end = start + block.length() -1
-                # print(start, end)
-                if str_role == '::' and end >= 2:
-                    sel_box = QTextEdit.ExtraSelection()
-                    sel_box.format.setForeground(GROUP_COLOR)
-                    sel_box.format.setFontWeight(800)
-                    sel_box.cursor = QTextCursor(block)
-                    sel_box.cursor.setPosition(
-                        start + 2, QTextCursor.MoveAnchor)
-                    sel_box.cursor.setPosition(
-                        end, QTextCursor.KeepAnchor)
-                    
-                    extra_selections.append(sel_box)
-                
-                elif str_role == ':':
-                    test_ze = False
-                    if block.text().startswith(':ICON_NAME=appl'):
-                        test_ze = True
-                        print('zkoe', block.lineCount(), block.length(), block.text() )
-                    for word, wstart, wend, is_value in string_sep(
-                            block.text(), split_equal=True):
-                        if test_ze:
-                            print('sp', is_value, word)
-                        
-                        sel = QTextEdit.ExtraSelection()
-                        if is_value:
-                            sel.format.setForeground(VALUE_COLOR)
-                        elif word in PRE_ATTRIBUTES:
-                            sel.format.setForeground(ATTR_PRE_COLOR)
-                        elif word in POST_ATTRIBUTES:
-                            sel.format.setForeground(ATTR_POST_COLOR)
-                        else:
-                            sel.format.setForeground(ATTR_ERR_COLOR)
-
-                        sel.cursor = QTextCursor(block)
-                        sel.cursor.setPosition(start + wstart, QTextCursor.MoveAnchor)
-                        sel.cursor.setPosition(start + wend + 1, QTextCursor.KeepAnchor)
-                        extra_selections.append(sel)
-                    
-                    
-                    # colon_indexes = [i for i, x in enumerate(block.text())
-                    #                  if x == ':']
-                    
-                    # for i in range(len(colon_indexes)):
-                    #     col_index = colon_indexes[i]
-                    #     start = col_index + 1
-                        
-                    #     if i + 1 == len(colon_indexes):
-                    #         end = block.length()
-                    #     else:
-                    #         # print('ofk', i, colon_indexes)
-                    #         end = colon_indexes[i+1]
-                            
-                    #     sel = QTextEdit.ExtraSelection()
-                    #     sel.format.setForeground(ATTR_OK_COL)
-                    #     sel.cursor = QTextCursor(block)
-                    #     sel.cursor.setPosition(start, QTextCursor.MoveAnchor)
-                    #     sel.cursor.setPosition(end, QTextCursor.KeepAnchor)
-                    #     extra_selections.append(sel)
-                        
-                        
-                # else:
-                #     selection.cursor.setPosition(
-                #         block.position() + 1, QTextCursor.MoveAnchor)
-                #     selection.cursor.setPosition(
-                #         block.position() + block.length(), QTextCursor.KeepAnchor)
-                #     extra_selections.append(selection)
-            block = block.next()
-        
-        self.setExtraSelections(extra_selections)
+    def _update_line_number_area_width(self):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
 
     def _update_line_number_area(self, rect: QRect, dy: int):
         if dy:
@@ -180,7 +101,73 @@ class CodeEditor(QPlainTextEdit):
                 0, rect.y(), self._line_number_area.width(), rect.height())
         
         if rect.contains(self.viewport().rect()):
-            self._update_line_number_area_width(0)
+            self._update_line_number_area_width()
+
+    def _update_completer_mode(self):
+        cursor = self.textCursor()
+        block = cursor.block()
+        
+        completer_mode = LineMode.NONE
+        
+        if block.text().startswith('::'):
+            completer_mode = LineMode.GROUP
+        elif block.text().startswith(':'):
+            completer_mode = LineMode.ATTR
+        else:
+            completer_mode = LineMode.PORT
+            
+        if completer_mode != self._completer_mode:
+            self._set_completer(completer_mode)
+
+    def _insert_completion(self, completion: str):
+        if self._completer.widget() is not self:
+            return
+        
+        if completion in ('PORTGROUP', 'PRETTY_NAME', 'PORT_ORDER',
+                          'ICON_NAME', 'CLIENT_ICON'):
+            completion += '='
+        
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.StartOfWord, QTextCursor.MoveAnchor)
+        tc.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+        tc.removeSelectedText()
+        tc.insertText(completion)
+        self.setTextCursor(tc)
+
+    def _get_completer(self):
+        return self._completer
+
+    def _set_completer(self, completer_mode: LineMode):
+        del self._completer
+        
+        self._completer_mode = completer_mode
+        
+        if completer_mode is LineMode.ATTR:
+            self._completer = Completer(
+                list(PRE_ATTRIBUTES) + list(POST_ATTRIBUTES), self)
+        elif completer_mode is LineMode.PORT:
+            self._port_models.clear()
+            for line in self.toPlainText().splitlines():
+                if line.startswith(':'):
+                    continue
+                if not line[:-1] in self._port_models:
+                    self._port_models.append(line[:-1])
+            self._completer = Completer(self._port_models, self)
+        else:
+            self._completer = Completer([], self)
+            
+        if not self._completer:
+            return
+        
+        self._completer.setWidget(self)
+        self._completer.setCompletionMode(QCompleter.PopupCompletion)
+        self._completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self._completer.activated.connect(self._insert_completion)
+
+    def _text_under_cursor(self) -> str:
+        tc = self.textCursor()
+        tc.select(QTextCursor.WordUnderCursor)
+        return tc.selectedText()
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
@@ -188,10 +175,47 @@ class CodeEditor(QPlainTextEdit):
         self._line_number_area.setGeometry(
             QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
-    # def paintEvent(self, event: QPaintEvent) -> None:
-    #     self._highlight_current_line()
+    def focusInEvent(self, event: QFocusEvent):
+        super().focusInEvent(event)
+        if self._completer:
+            self._completer.setWidget(self)
+            
+    def keyPressEvent(self, event: QKeyEvent):
+        if self._completer and self._completer.popup().isVisible():
+            if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape,
+                               Qt.Key_Tab, Qt.Key_Backtab):
+                event.ignore()
+                return
         
-    #     super().paintEvent(event)
+        modifiers = QApplication.keyboardModifiers()
+                
+        super().keyPressEvent(event)
+        
+        ctrl_or_shift = modifiers & Qt.ControlModifier or modifiers & Qt.ShiftModifier
+        if not self._completer or (ctrl_or_shift and not(event.text())):
+            return
+        
+        eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="
+        has_modifier = bool(modifiers != Qt.NoModifier and not ctrl_or_shift)
+        completion_prefix = self._text_under_cursor()
+        
+        if (has_modifier
+                or not(event.text())
+                or len(completion_prefix) < 1
+                or event.text()[-1] in eow):
+            self._completer.popup().hide()
+            return
+        
+        if completion_prefix != self._completer.completionPrefix():
+            self._completer.setCompletionPrefix(completion_prefix)
+            self._completer.popup().setCurrentIndex(
+                self._completer.completionModel().index(0, 0))
+        
+        cr = self.cursorRect()
+        cr.setWidth(self._completer.popup().sizeHintForColumn(0)
+                    + self._completer.popup().verticalScrollBar().sizeHint().width())
+        self._completer.complete(cr)
+
 
 class LineNumberArea(QWidget):
     def __init__(self, editor: CodeEditor):
@@ -214,59 +238,36 @@ DARK_SCHEME = {
 }
 
 
-@dataclass
-class HighlightingRule:
-    pattern: QRegularExpression
-    format: QTextCharFormat
-
-
 class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent: QTextDocument):
-        super().__init__(parent)
-        self._parent = parent
-        
+        super().__init__(parent)        
         self._col = DARK_SCHEME
-        
+
         self._default_format = QTextCharFormat()
-        
+
         self._group_format = QTextCharFormat()
-        self._group_format.setForeground(self._col['GROUP_COLOR'])
-        # self._group_format.setFontWeight(QFont.Bold)
-        
+        self._group_format.setForeground(self._col['GROUP_COLOR'])        
+
         self._pre_attr_format = QTextCharFormat()
         self._pre_attr_format.setForeground(self._col['ATTR_PRE_COLOR'])
-        # self._pre_attr.setFontWeight(QFont.Bold)
-        
+
         self._post_attr_format = QTextCharFormat()
         self._post_attr_format.setForeground(self._col['ATTR_POST_COLOR'])
-        
+
         self._value_format = QTextCharFormat()
         self._value_format.setForeground(self._col['VALUE_COLOR'])
-        
+
         self._err_format = QTextCharFormat()
         self._err_format.setForeground(self._col['ATTR_ERR_COLOR'])
-        
-        self._highlighting_rules = list[HighlightingRule]()
-        
-        # keyword_patterns = PRE_ATTRIBUTES
-        for attr_str in PRE_ATTRIBUTES:
-            self._highlighting_rules.append(
-                HighlightingRule(QRegularExpression(attr_str),
-                                 self._pre_attr_format))
-            
-        for attr_str in POST_ATTRIBUTES:
-            self._highlighting_rules.append(
-                HighlightingRule(QRegularExpression(attr_str),
-                                 self._post_attr_format))
     
     def highlightBlock(self, text: str):
         if text.startswith('::'):
             if len(text) > 2:
                 self.setFormat(2, len(text) -1, self._group_format)
-                
+
         elif text.startswith(':'):
-            for word, start, end, is_value in string_sep(text, split_equal=True, get_splitter=True):
-                print(f"'{word}'")
+            for word, start, end, is_value in string_sep(
+                    text, split_equal=True, get_splitter=True):
                 if is_value:
                     format = self._value_format
                 elif word in PRE_ATTRIBUTES:
@@ -276,7 +277,27 @@ class Highlighter(QSyntaxHighlighter):
                 elif word in (':', '='):
                     format = self._default_format
                 else:
-                    format = self._err_format
+                    if text.endswith(word):
+                        for pre_attr in PRE_ATTRIBUTES:
+                            if pre_attr.startswith(word.upper()):
+                                format = self._pre_attr_format
+                                break
+                        else:
+                            for post_attr in POST_ATTRIBUTES:
+                                if post_attr.startswith(word.upper()):
+                                    format = self._post_attr_format
+                                    break
+                            else:
+                                format = self._err_format
+                    else:
+                        format = self._err_format
                 self.setFormat(start, end, format)
+
+
+class Completer(QCompleter):
+    def __init__(self, *args):
+        QCompleter.__init__(self, *args)
         
-    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() not in (Qt.Key_Right, Qt.Key_Tab, Qt.Key_Enter):
+            event.ignore()

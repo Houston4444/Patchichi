@@ -3,17 +3,17 @@
 from typing import Iterator
 
 PRE_ATTRIBUTES = (
+    'OUTPUT',
+    'INPUT',
+    'AUDIO',
+    'MIDI',
+    'CV',
     'PHYSICAL',
     '~PHYSICAL',
     'MONITOR',
     '~MONITOR',
     'TERMINAL',
     '~TERMINAL',
-    'OUTPUT',
-    'INPUT',
-    'AUDIO',
-    'MIDI',
-    'CV',
     'PORTGROUP',
     '~PORTGROUP'
 )
