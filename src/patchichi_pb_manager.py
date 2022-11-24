@@ -139,6 +139,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         port_flags = JackPortFlag.IS_OUTPUT
         port_uuid = 0
 
+        added_ports = set[str]()
+        connections = [(c.port_out.full_name, c.port_in.full_name)
+                       for c in self.connections]
         self.clear_all()
         self.optimize_operation(True)
         self.very_fast_operation = True
@@ -220,7 +223,8 @@ class PatchichiPatchbayManager(PatchbayManager):
                     elif param.startswith('PRETTY_NAME='):
                         if not port_uuid:
                             _log('PRETTY_NAME affected to no port')
-                            
+                            continue
+  
                         self.metadata_update(
                             port_uuid,
                             JACK_METADATA_PRETTY_NAME,
@@ -230,6 +234,13 @@ class PatchichiPatchbayManager(PatchbayManager):
                     _log('No group name set')
                     continue
                 
+                full_port_name = f"{group_name}:{line}"
+                if full_port_name in added_ports:
+                    _log(f'Port "{full_port_name}" already added !')
+                    continue
+
+                added_ports.add(full_port_name)
+
                 port_uuid += 1
                 group_id = self.add_port(
                     f'{group_name}:{line}',
@@ -258,15 +269,17 @@ class PatchichiPatchbayManager(PatchbayManager):
             visible = group_guis.get(group.name)
             if visible is not None:
                 group.set_optional_gui_state(visible)
-                
+        
+        for port_out_full_name, port_in_full_name in connections:
+            if (port_out_full_name in added_ports
+                    and port_in_full_name in added_ports):
+                self.add_connection(port_out_full_name, port_in_full_name)
+         
         self.very_fast_operation = False
         
         for group in self.groups:
             group.add_all_ports_to_canvas()
             group.sort_ports_in_canvas()
-        
-        # for conn in self.connections:
-        #     conn.add_to_canvas()
         
         self.optimize_operation(False)
         self.redraw_all_groups()
