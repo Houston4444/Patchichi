@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
+from editor_help_dialog import EditorHelpDialog
 from patchbay.tools_widgets import PatchbayToolsWidget
 from patchbay.base_elements import ToolDisplayed
 
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.ui.actionLoadScene.triggered.connect(self._load_scene)
         self.ui.actionSaveScene.triggered.connect(self._save_scene)
         self.ui.actionSaveAs.triggered.connect(self._save_scene_as)
+        self.ui.toolButtonEditorHelp.clicked.connect(self._show_editor_help)
 
         filter_bar_shortcut = QShortcut('Ctrl+F', self)
         filter_bar_shortcut.setContext(Qt.ApplicationShortcut)
@@ -223,6 +225,13 @@ class MainWindow(QMainWindow):
             print('scene name', scene_name)
             self.setWindowTitle(
                 f"Patchichi - {scene_name}")
+
+    @pyqtSlot()
+    def _show_editor_help(self):
+        print('houhouoz')
+        dialog = EditorHelpDialog(self)
+        dialog.show()
+        
 
     def closeEvent(self, event):
         self.settings.setValue('MainWindow/geometry', self.saveGeometry())

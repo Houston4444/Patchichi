@@ -1,0 +1,117 @@
+= Help for Patchichi editor
+
+== Introduction
+
+Add group and ports to the editor to see them in the patchbay.
+Connections and box positions are not managed here.
+
+== Syntax introduction
+
+The syntax is based on lines.
+
+=== Add a group
+
+To add a group, start a line with 2 colons and type the group name, this way:
+
+```
+::Group Name
+```
+
+the group will appears in the patchbay once you have added one port.
+
+=== Define a property
+
+To define a property, starts a line with 1 colon, and separate properties with 1 colon, this way:
+
+```
+:AUDIO:OUTPUT
+```
+
+=== Add a port
+
+To add a port, simply type its name, for example
+
+```
+output_L
+```
+
+== Properties
+
+There are 2 types of properties, pre-properties and post-properties.
+Pre-properties define port properties for all following ports, until another property redefine this property.
+Post-properties only affect the previous port.
+
+=== Pre-Properties
+
+Available pre-properties are:
+
+```
+OUTPUT
+INPUT
+
+AUDIO
+MIDI
+CV
+
+PHYSICAL
+MONITOR
+TERMINAL
+~PHYSICAL
+~MONITOR
+~TERMINAL
+
+PORTGROUP
+~PORTGROUP
+```
+
+* OUTPUT
+* INPUT
+* AUDIO
+* MIDI
+* CV
+* PHYSICAL
+* MONITOR
+* TERMINAL
+* ~PHYSICAL
+* ~MONITOR
+* ~TERMINAL
+* PORTGROUP
+* ~PORTGROUP
+
+pre-properties starting with ~ can be used to not affect the property to the following ports anymore.
+
+PORTGROUP is a value-property, see <<value_properties>>.
+
+=== Post-properties
+
+post-properties available after group definition are:
+
+* PRETTY_NAME
+* GUI_VISIBLE
+* GUI_HIDDEN
+* ICON_NAME
+* CLIENT_ICON
+
+PRETTY_NAME, ICON_NAME and CLIENT_ICON are <<value_properties>>.
+
+post-properties available after port definition are:
+
+* PRETTY_NAME
+* PORT_ORDER
+
+PRETTY_NAME and PORT_ORDER are <<value_properties>>.
+
+[#value_properties]
+=== value-properties
+
+value-properties have to be defined with the following syntax:
+
+```
+PROPERTY=my value
+```
+
+if the value contains colons, you have to preceed this colons with antislash, this way
+
+```
+PROPERTY=something\:something else
+```

@@ -51,6 +51,7 @@ mkdir_ui:
 	@if ! [ -e src/ui ];then mkdir -p src/ui; fi
 
 patchichi: src/ui/main_win.py \
+		   src/ui/editor_help.py \
 		   src/ui/about_patchichi.py
 
 src/ui/%.py: resources/ui/%.ui
