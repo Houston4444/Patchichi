@@ -144,7 +144,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         port_uuid = 0
 
         added_ports = set[str]()
-        connections = [(c.port_out.full_name, c.port_in.full_name)
+        tuple_conns = [(c.port_out.full_name, c.port_in.full_name)
                        for c in self.connections]
         self.clear_all()
         self.optimize_operation(True)
@@ -273,19 +273,24 @@ class PatchichiPatchbayManager(PatchbayManager):
             visible = group_guis.get(group.name)
             if visible is not None:
                 group.set_optional_gui_state(visible)
-        
-        for port_out_full_name, port_in_full_name in connections:
+         
+        for group in self.groups:
+            group.sort_ports_in_canvas()
+         
+        for port_out_full_name, port_in_full_name in tuple_conns:
             if (port_out_full_name in added_ports
                     and port_in_full_name in added_ports):
                 self.add_connection(port_out_full_name, port_in_full_name)
-         
-        self.very_fast_operation = False
         
+        self.very_fast_operation = False
+
         for group in self.groups:
             group.add_all_ports_to_canvas()
-            group.sort_ports_in_canvas()
         
-        self.optimize_operation(False)
+        for connection in self.connections:
+            connection.add_to_canvas()
+                
+        self.optimize_operation(False)        
         self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
@@ -481,12 +486,45 @@ class PatchichiPatchbayManager(PatchbayManager):
                         break
         
         file_dict['portgroups'] = portgroups
-        
+
         try:
             with open(path, 'w') as f:
-                json.dump(file_dict, f)
+                json.dump(file_dict, f, indent=2)
             return True
         except Exception as e:
             _logger.error(f'Failed to save patchichi file: {str(e)}')
             return False
+
+    def load_file(self, path: Path) -> bool:
+        try:
+            with open(path, 'r') as f:
+                json_dict = json.load(f)
+                assert isinstance(json_dict, dict)
+        except Exception as e:
+            _logger.error(f'Failed to open file "{str(Path)}", {str(e)}')
+            return False
+
+        editor_text: str = json_dict['editor_text']
+        connections: list[tuple[str, str]] = json_dict['connections']
+        group_positions: list[dict] = json_dict['group_positions']
+        portgroups: list[dict] = json_dict['portgroups']
+
+        self.clear_all()
+
+        self.group_positions.clear()
+        self.portgroups_memory.clear()
+
+        for gpos_dict in group_positions:
+            self.group_positions.append(
+                GroupPos.from_serialized_dict(gpos_dict))
+
+        for gp_mem_dict in portgroups:
+            self.portgroups_memory.append(
+                PortgroupMem.from_serialized_dict(gp_mem_dict))
+
+        self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
+        for port_out_name, port_in_name in connections:
+            self.add_connection(port_out_name, port_in_name)
+
+        return True
 
