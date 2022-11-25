@@ -1,9 +1,12 @@
 
 from dis import dis
+import os
+from pathlib import Path
 from re import L
-from typing import TYPE_CHECKING
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QMenu, QApplication, QToolButton
-from PyQt5.QtCore import Qt
+from typing import TYPE_CHECKING, Optional
+from PyQt5.QtWidgets import (
+    QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog)
+from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
 from patchbay.tools_widgets import PatchbayToolsWidget
@@ -14,6 +17,8 @@ from ui.main_win import Ui_MainWindow
 
 if TYPE_CHECKING:
     from patchichi import Main
+
+_translate = QApplication.translate
 
 
 class MainWindow(QMainWindow):
@@ -42,6 +47,10 @@ class MainWindow(QMainWindow):
         self.ui.actionAboutPatchichi.triggered.connect(self._show_about_dialog)
         self.ui.actionAboutQt.triggered.connect(QApplication.aboutQt)
 
+        self.ui.actionLoadScene.triggered.connect(self._load_scene)
+        self.ui.actionSaveScene.triggered.connect(self._save_scene)
+        self.ui.actionSaveAs.triggered.connect(self._save_scene_as)
+
         filter_bar_shortcut = QShortcut('Ctrl+F', self)
         filter_bar_shortcut.setContext(Qt.ApplicationShortcut)
         filter_bar_shortcut.activated.connect(
@@ -65,6 +74,8 @@ class MainWindow(QMainWindow):
         self.ui.plainTextEditPorts.textChanged.connect(self._text_changed)
         
         self.ui.graphicsView.setFocus()
+        
+        self._current_path: Optional[Path] = None
         
     def finish_init(self, main: 'Main'):
         self.patchbay_manager = main.patchbay_manager
@@ -120,6 +131,9 @@ class MainWindow(QMainWindow):
         self.patchbay_manager.update_from_text(
             self.ui.plainTextEditPorts.toPlainText())
     
+    def get_editor_text(self) -> str:
+        return self.ui.plainTextEditPorts.toPlainText()
+    
     def refresh_patchbay(self):
         if self.patchbay_manager is None:
             return
@@ -150,6 +164,58 @@ class MainWindow(QMainWindow):
 
     def set_logs_text(self, text: str):
         self.ui.textEditLogs.setPlainText(text)
+
+    def _get_scenes_path(self) -> Path:
+        scenes_dir = Path(self.settings.fileName()).parent / 'scenes'
+        try:
+            if not scenes_dir.exists():
+                scenes_dir.mkdir()
+        except:
+            return Path(os.getenv('HOME'))
+        
+        return scenes_dir
+    
+    @pyqtSlot()
+    def _load_scene(self):
+        ret, ok = QFileDialog.getOpenFileName(
+            self,
+            _translate('file_dialog', 'Choose the patchichi scene to load...'),
+            str(self._get_scenes_path()),
+            _translate('file_dialog', 'Patchichi files (*.patchichi.json)'))
+
+        if ok:
+            print(ret)
+    
+    @pyqtSlot()
+    def _save_scene(self):
+        if self._current_path is None:
+            self._save_scene_as()
+            return
+        
+        if not self.patchbay_manager.save_file_to(self._current_path):
+            # TODO error dialog
+            pass
+    
+    @pyqtSlot()
+    def _save_scene_as(self):
+        ret, ok = QFileDialog.getSaveFileName(
+            self,
+            _translate('file_dialog', 'Where do you want to save this patchbay scene ?'),
+            str(self._get_scenes_path()),
+            _translate('file_dialog', 'Patchichi files (*.patchichi.json)'))
+
+        if not ok:
+            return
+
+        print('oizded')
+
+        if self.patchbay_manager.save_file_to(Path(ret)):
+            print('sldkdkf')
+            self._current_path = Path(ret)
+            scene_name = self._current_path.name.rpartition('.patchichi.json')[0]
+            print('scene name', scene_name)
+            self.setWindowTitle(
+                f"Patchichi - {scene_name}")
 
     def closeEvent(self, event):
         self.settings.setValue('MainWindow/geometry', self.saveGeometry())

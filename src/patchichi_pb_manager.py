@@ -4,7 +4,7 @@ import json
 import logging
 import operator
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, Union
+from typing import TYPE_CHECKING, Any, Iterator, Union
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
@@ -114,8 +114,8 @@ class PatchichiPatchbayManager(PatchbayManager):
             if path not in theme_paths:
                 theme_paths.append(path)
 
-        if TYPE_CHECKING:
-            assert isinstance(self.main_win, MainWindow)
+        # if TYPE_CHECKING:
+        #     assert isinstance(self.main_win, MainWindow)
 
         self.app_init(self.main_win.ui.graphicsView,
                       theme_paths,
@@ -291,6 +291,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.main_win.set_logs_text('\n'.join(log_lines))
     
     def export_port_list(self) -> str:
+        def slcol(input_str: str) -> str:
+            return input_str.replace(':', '\\:')
+        
         contents = ''
         
         gps_and_ports = list[tuple[str, list[Port]]]()
@@ -323,9 +326,9 @@ class PatchichiPatchbayManager(PatchbayManager):
                         group_attrs = list[str]()
                         if group.client_icon:
                             if group._icon_from_metadata:
-                                group_attrs.append(f'ICON_NAME={group.client_icon}')
+                                group_attrs.append(f'ICON_NAME={slcol(group.client_icon)}')
                             else:
-                                group_attrs.append(f'CLIENT_ICON={group.client_icon}')
+                                group_attrs.append(f'CLIENT_ICON={slcol(group.client_icon)}')
 
                         if group.has_gui:
                             if group.gui_visible:
@@ -358,7 +361,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
                 if port.mdata_portgroup != pg_name:
                     if port.mdata_portgroup:
-                        contents += f':PORTGROUP={port.mdata_portgroup}\n'
+                        contents += f':PORTGROUP={slcol(port.mdata_portgroup)}\n'
                     else:
                         contents += ':~PORTGROUP\n'
                     pg_name = port.mdata_portgroup
@@ -369,7 +372,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 if port.pretty_name or port.order:
                     port_attrs = list[str]()
                     if port.pretty_name:
-                        port_attrs.append(f'PRETTY_NAME={port.pretty_name}')
+                        port_attrs.append(f'PRETTY_NAME={slcol(port.pretty_name)}')
                     if port.order:
                         port_attrs.append(f'PORT_ORDER={port.order}')
                     contents += '\n'
@@ -447,4 +450,43 @@ class PatchichiPatchbayManager(PatchbayManager):
                     json.dump(full_dict, f, indent=4)
             except Exception as e:
                 _logger.warning(str(e))
+                
+    def save_file_to(self, path: Path) -> bool:
+        file_dict = dict[str, Any]()
+        
+        editor_text = self.main_win.get_editor_text()
+        
+        file_dict['editor_text'] = editor_text
+        conn_list = list[tuple[str, str]]()
+        for conn in self.connections:
+            conn_list.append(
+                (conn.port_out.full_name, conn.port_in.full_name))
+        file_dict['connections'] = conn_list
+        file_dict['group_positions'] = [
+            gpos.as_serializable_dict() for gpos in self.group_positions
+            if self.get_group_from_name(gpos.group_name) is not None]
+        
+        portgroups = list[dict[str, Any]]()
+        for pg_mem in self.portgroups_memory:
+            group = self.get_group_from_name(pg_mem.group_name)
+            if group is None:
+                continue
+
+            for port_str in pg_mem.port_names:
+                for port in group.ports:
+                    if (port.short_name() == port_str
+                            and port.type() == pg_mem.port_type
+                            and port.mode() == pg_mem.port_mode):
+                        portgroups.append(pg_mem.as_serializable_dict())
+                        break
+        
+        file_dict['portgroups'] = portgroups
+        
+        try:
+            with open(path, 'w') as f:
+                json.dump(file_dict, f)
+            return True
+        except Exception as e:
+            _logger.error(f'Failed to save patchichi file: {str(e)}')
+            return False
 
