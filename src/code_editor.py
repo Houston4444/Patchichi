@@ -20,6 +20,23 @@ class LineMode(Enum):
     PORT = 3
 
 
+DARK_SCHEME = {
+    'GROUP_COLOR': QColor(100, 214, 189),
+    'ATTR_PRE_COLOR': QColor(150, 211, 241),
+    'ATTR_POST_COLOR': QColor(220, 220, 170),
+    'ATTR_ERR_COLOR': QColor(255, 0, 0),
+    'VALUE_COLOR': QColor(206, 145, 120)
+}
+
+LIGHT_SCHEME = {
+    'GROUP_COLOR': QColor(60, 126, 91),
+    'ATTR_PRE_COLOR': QColor(7, 23, 132),
+    'ATTR_POST_COLOR': QColor(113, 100, 76),
+    'ATTR_ERR_COLOR': QColor(255, 0, 0),
+    'VALUE_COLOR': QColor(138, 80, 80)
+}
+
+
 # Code translated from C++ from 
 # https://doc.qt.io/qt-6/qtwidgets-widgets-codeeditor-example.html
 
@@ -27,8 +44,15 @@ class CodeEditor(QPlainTextEdit):
     def __init__(self, parent):
         super().__init__(parent)
         
-        self.setStyleSheet(
-            'QPlainTextEdit{background-color:#1e1e1e; color:white}')
+        dark = self.palette().text().color().lightnessF() > 0.5
+        
+        if dark:
+            self.setStyleSheet(
+                'QPlainTextEdit{background-color:#1e1e1e; color:white}')
+        else:
+            self.setStyleSheet(
+                'QPlainTextEdit{background-color:#eeeeee; color:black}')
+
         self._line_number_area = LineNumberArea(self)
 
         self.blockCountChanged.connect(self._block_count_changed)
@@ -37,7 +61,7 @@ class CodeEditor(QPlainTextEdit):
         
         self._update_line_number_area_width()
         
-        self._highlighter = Highlighter(self.document())
+        self._highlighter = Highlighter(self.document(), dark)
 
         self._completer_mode = LineMode.NONE
         self._port_models = list[str]()
@@ -227,21 +251,12 @@ class LineNumberArea(QWidget):
     
     def paintEvent(self, event: QPaintEvent):
         self._code_editor.line_number_area_paint_event(event)
-        
-
-DARK_SCHEME = {
-    'GROUP_COLOR': QColor(100, 214, 189),
-    'ATTR_PRE_COLOR': QColor(150, 211, 241),
-    'ATTR_POST_COLOR': QColor(220, 220, 170),
-    'ATTR_ERR_COLOR': QColor(255, 0, 0),
-    'VALUE_COLOR': QColor(206, 145, 120)
-}
 
 
 class Highlighter(QSyntaxHighlighter):
-    def __init__(self, parent: QTextDocument):
-        super().__init__(parent)        
-        self._col = DARK_SCHEME
+    def __init__(self, parent: QTextDocument, dark=False):
+        super().__init__(parent)
+        self._col = DARK_SCHEME if dark else LIGHT_SCHEME
 
         self._default_format = QTextCharFormat()
 
