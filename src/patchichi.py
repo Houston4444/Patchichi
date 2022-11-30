@@ -112,7 +112,7 @@ def main_loop():
 
     app.exec()
     settings.sync()
-    pb_manager.save_positions()
+    pb_manager.save_patchcanvas_cache()
     del app
 
 
