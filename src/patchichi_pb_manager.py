@@ -4,18 +4,20 @@ import json
 import logging
 import operator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, Union
+from sqlite3 import connect
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, Port, PortgroupMem, Group, ToolDisplayed)
+    Connection, GroupPos, JackPortFlag, Port, PortgroupMem, Group)
 from patchbay import (
     CanvasMenu,
     Callbacker,
     CanvasOptionsDialog,
-    PatchbayManager)
+    PatchbayManager,
+    patchcanvas)
 from patchbay.patchbay_manager import JACK_METADATA_ICON_NAME, JACK_METADATA_ORDER, JACK_METADATA_PORT_GROUP, JACK_METADATA_PRETTY_NAME, later_by_batch
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from patchbay.patchcanvas.patchcanvas import add_port
@@ -61,7 +63,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         self.jack_mng = None
         self._memory_path = None
-        
+        self._last_active_lines = list[str]()
         self._gp_client_icons = dict[str, str]()
         
         if settings is not None:
@@ -114,9 +116,6 @@ class PatchichiPatchbayManager(PatchbayManager):
             if path not in theme_paths:
                 theme_paths.append(path)
 
-        # if TYPE_CHECKING:
-        #     assert isinstance(self.main_win, MainWindow)
-
         self.app_init(self.main_win.ui.graphicsView,
                       theme_paths,
                       callbacker=PatchichiCallbacker(self),
@@ -129,6 +128,180 @@ class PatchichiPatchbayManager(PatchbayManager):
         def _log(string: str):
             _logger.warning(f'line {line_n}:{string}')
             log_lines.append(f'line {line_n} : {string}')
+
+        def _is_gp(s: str) -> bool:
+            return bool(s.startswith('::') and len(s) >= 3)
+
+        active_lines = [l for l in text.splitlines() if l]
+
+        ports_to_rename = list[tuple[str, str]]()
+        group_to_rename: Optional[tuple[str, str]] = None
+        full_modif = True
+
+        if len(active_lines) == len(self._last_active_lines):
+            full_modif = False
+            group_name = ''
+            
+            for n in range(len(active_lines)):
+                if _is_gp(active_lines[n]):
+                    group_name = active_lines[n][2:]
+                
+                if active_lines[n] == self._last_active_lines[n]:
+                    if (group_to_rename is not None
+                            and group_name == group_to_rename[0]
+                            and not active_lines[n].startswith(':')):
+                        ports_to_rename.append(
+                            f"{group_to_rename[0]}:{active_lines[n]}",
+                            f"{group_to_rename[1]}:{active_lines[n]}")
+                    continue
+
+                # here the two compared lines are different
+
+                if group_to_rename is not None:
+                    # we can rename one group only
+                    # if there is only its definition line changed.
+                    full_modif = True
+                    break
+
+                if _is_gp(active_lines[n]):
+                    if _is_gp(self._last_active_lines[n]):
+                        if ports_to_rename:
+                            full_modif = True
+                            break
+
+                        # remember the group to rename
+                        group_to_rename = (self._last_active_lines[n][2:],
+                                           active_lines[n][2:])
+                    else:
+                        full_modif = True
+                        break
+
+                elif (active_lines[n].startswith(':')
+                        or self._last_active_lines[n].startswith(':')):
+                    # parameter changed
+                    full_modif = True
+                    break
+                else:
+                    if not group_name:
+                        full_modif = True
+                        break
+
+                    ports_to_rename.append(
+                        (f"{group_name}:{self._last_active_lines[n]}",
+                         f"{group_name}:{active_lines[n]}")
+                    )
+            
+            if not full_modif:
+                if not (ports_to_rename or group_to_rename):
+                    # nothing really changed in the text
+                    return
+        
+            # if not full_modif and (ports_to_rename or group_to_rename):
+
+                if group_to_rename is not None:
+                    print('oupsaa', group_to_rename)
+                    old_gp_name, new_gp_name = group_to_rename
+                    for gpos in self.group_positions:
+                        if gpos.group_name == old_gp_name:
+                            gpos.group_name = new_gp_name
+                
+                    group = self.get_group_from_name(old_gp_name)
+                    if group is not None:
+                        ports_to_add = list[tuple[str, int, int, int]]()
+                        conns_to_remove = list[Connection]()
+                        conns_to_add = list[tuple[str, str]]()
+                        
+                        for port in group.ports:
+                            new_port_name = \
+                                f"{new_gp_name}:{port.full_name.partition(':')[2]}"
+
+                            ports_to_add.append((
+                                new_port_name,
+                                port.type.value, port.flags, port.uuid))
+
+                            if port.mode() is PortMode.OUTPUT:
+                                for conn in self.connections:
+                                    if (conn.port_out is port
+                                            and not conn in conns_to_remove):
+                                        conns_to_remove.append(conn)
+
+                                        if conn.port_in in group.ports:
+                                            conns_to_add.append(
+                                                (new_port_name,
+                                                 f"{new_gp_name}:{conn.port_in.full_name.partition(':')[2]}")
+                                            )
+                                        else:
+                                            conns_to_add.append(
+                                                (new_port_name,
+                                                 conn.port_in.full_name))
+
+                            elif port.mode() is PortMode.INPUT:
+                                for conn in self.connections:
+                                    if (conn.port_in is port
+                                            and not conn in conns_to_remove):
+                                        conns_to_remove.append(conn)
+                                        if conn.port_out in group.ports:
+                                            conns_to_add.append(
+                                                (f"{new_gp_name}:{conn.port_out.full_name.   partition(':')[2]}",
+                                                 new_port_name)
+                                            )
+                                        else:
+                                            conns_to_add.append(
+                                                (conn.port_out.full_name,
+                                                 new_port_name))
+                        
+                        self.optimize_operation(True)
+                        
+                        for conn in conns_to_remove:
+                            conn.remove_from_canvas()
+                            self.connections.remove(conn)
+                            
+                        group.remove_all_ports()
+                        group.remove_from_canvas()
+                        if group in self.groups:
+                            self.groups.remove(group)
+                        
+                        self.very_fast_operation = True
+                        
+                        for port_name, port_type, flags, uuid in ports_to_add:
+                            group_id = self.add_port(port_name, port_type, flags, uuid)
+
+                        group = self.get_group_from_id(group_id)
+                        if group is not None:
+                            group.sort_ports_in_canvas()
+                        
+                        for port_out_name, port_in_name in conns_to_add:
+                            self.add_connection(port_out_name, port_in_name)
+                        
+                        self.very_fast_operation = False
+                        
+                        if group is not None:
+                            group.add_all_ports_to_canvas()
+                        
+                        for connection in self.connections:
+                            connection.add_to_canvas()
+                        
+                        self.optimize_operation(False)
+                        
+                        if group is not None:
+                            group.redraw_in_canvas()
+                        else:
+                            self.redraw_all_groups()
+                        
+                        # self.redraw_all_groups()
+
+                elif ports_to_rename:
+                    print('rogg', ports_to_rename)
+                    for old_name, new_name in ports_to_rename:
+                        self.rename_port(old_name, new_name)
+                
+                    # self.very_fast_operation = False
+                    self.optimize_operation(False)
+                    self.redraw_all_groups()
+                self._last_active_lines.clear()
+                self._last_active_lines = active_lines
+                return
+                
 
         log_lines = list[str]() 
         group_names_added = set[str]()
@@ -293,6 +466,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.optimize_operation(False)        
         self.redraw_all_groups()
         
+        self._last_active_lines.clear()
+        self._last_active_lines = active_lines
+        
         self.main_win.set_logs_text('\n'.join(log_lines))
     
     def export_port_list(self) -> str:
@@ -330,10 +506,10 @@ class PatchichiPatchbayManager(PatchbayManager):
                     if group is not None:
                         group_attrs = list[str]()
                         if group.client_icon:
-                            if group._icon_from_metadata:
-                                group_attrs.append(f'ICON_NAME={slcol(group.client_icon)}')
-                            else:
-                                group_attrs.append(f'CLIENT_ICON={slcol(group.client_icon)}')
+                            group_attrs.append(f'CLIENT_ICON={slcol(group.client_icon)}')
+                            
+                        if group.mdata_icon:
+                            group_attrs.append(f'ICON_NAME={slcol(group.mdata_icon)}')
 
                         if group.has_gui:
                             if group.gui_visible:
@@ -461,6 +637,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         editor_text = self.main_win.get_editor_text()
         
+        for gpos in self.group_positions:
+            print('gpos:', gpos.group_name, gpos.flags)
+        
         file_dict['editor_text'] = editor_text
         conn_list = list[tuple[str, str]]()
         for conn in self.connections:
@@ -517,6 +696,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         for gpos_dict in group_positions:
             self.group_positions.append(
                 GroupPos.from_serialized_dict(gpos_dict))
+
+        for gpos in self.group_positions:
+            print('gposin', gpos.port_types_view, gpos.group_name, gpos.flags)
 
         for gp_mem_dict in portgroups:
             self.portgroups_memory.append(
