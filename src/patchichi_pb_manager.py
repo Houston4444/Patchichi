@@ -1,5 +1,6 @@
 
 
+from dataclasses import dataclass
 import json
 import logging
 import operator
@@ -34,6 +35,44 @@ _logger = logging.getLogger(__name__)
 MEMORY_FILE = 'canvas.json'
 
 
+class RenameBuffer:
+    def __init__(self, line: int, old: str, gp_name=''):
+        self.line = line
+        self.old = old
+        self.conns = list[tuple[str, str]]()
+        self.portgroups = list[tuple[str, str]]()
+        
+        # gp_name is used for port rename
+        self.gp_name = gp_name
+        
+    def renamed_conns(self, new_name: str) -> list[tuple[str, str]]:
+        out_list = list[tuple[str, str]]()
+        
+        if not self.gp_name:
+            # This is a group renamer
+            new_gp_name = new_name
+            for out_p, in_p in self.conns:
+                if out_p.startswith(self.old + ':'):
+                    out_p = new_gp_name + ':' + out_p.partition(':')[2]
+                if in_p.startswith(self.old + ':'):
+                    in_p = new_gp_name + ':' + in_p.partition(':')[2]
+                
+                out_list.append((out_p, in_p))
+        
+        else:
+            # This is a port renamer
+            new_p_name = new_name
+            for out_p, in_p in self.conns:
+                if out_p == self.gp_name + ':' + self.old:
+                    out_p = self.gp_name + ':' + new_p_name
+                if in_p == self.gp_name + ':' + self.old:
+                    in_p = self.gp_name + ':' + new_p_name
+                
+                out_list.append((out_p, in_p))
+        
+        return out_list
+    
+
 class PatchichiCallbacker(Callbacker):
     def __init__(self, manager: 'PatchichiPatchbayManager'):
         super().__init__(manager)
@@ -54,6 +93,7 @@ class PatchichiCallbacker(Callbacker):
                     conn.port_out.full_name, conn.port_in.full_name)
                 break
 
+
 class PatchichiPatchbayManager(PatchbayManager):
     main_win: 'MainWindow'
     
@@ -63,9 +103,14 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         self.jack_mng = None
         self._memory_path = None
-        self._last_active_lines = list[str]()
+        self._last_text_lines = list[str]()
         self._gp_client_icons = dict[str, str]()
         
+        # Used to remember group position and connections
+        # if a group is renamed (changing only its line definition),
+        # it is only used when the group name is set to empty
+        self._rename_buffer: Optional[RenameBuffer] = None
+
         if settings is not None:
             self._memory_path = Path(
                 settings.fileName()).parent.joinpath(MEMORY_FILE)
@@ -129,179 +174,147 @@ class PatchichiPatchbayManager(PatchbayManager):
             _logger.warning(f'line {line_n}:{string}')
             log_lines.append(f'line {line_n} : {string}')
 
-        def _is_gp(s: str) -> bool:
-            return bool(s.startswith('::') and len(s) >= 3)
-
-        active_lines = [l for l in text.splitlines() if l]
-
-        ports_to_rename = list[tuple[str, str]]()
-        group_to_rename: Optional[tuple[str, str]] = None
-        full_modif = True
-
-        if len(active_lines) == len(self._last_active_lines):
-            full_modif = False
-            group_name = ''
-            
-            for n in range(len(active_lines)):
-                if _is_gp(active_lines[n]):
-                    group_name = active_lines[n][2:]
-                
-                if active_lines[n] == self._last_active_lines[n]:
-                    if (group_to_rename is not None
-                            and group_name == group_to_rename[0]
-                            and not active_lines[n].startswith(':')):
-                        ports_to_rename.append(
-                            f"{group_to_rename[0]}:{active_lines[n]}",
-                            f"{group_to_rename[1]}:{active_lines[n]}")
-                    continue
-
-                # here the two compared lines are different
-
-                if group_to_rename is not None:
-                    # we can rename one group only
-                    # if there is only its definition line changed.
-                    full_modif = True
-                    break
-
-                if _is_gp(active_lines[n]):
-                    if _is_gp(self._last_active_lines[n]):
-                        if ports_to_rename:
-                            full_modif = True
-                            break
-
-                        # remember the group to rename
-                        group_to_rename = (self._last_active_lines[n][2:],
-                                           active_lines[n][2:])
-                    else:
-                        full_modif = True
-                        break
-
-                elif (active_lines[n].startswith(':')
-                        or self._last_active_lines[n].startswith(':')):
-                    # parameter changed
-                    full_modif = True
-                    break
-                else:
-                    if not group_name:
-                        full_modif = True
-                        break
-
-                    ports_to_rename.append(
-                        (f"{group_name}:{self._last_active_lines[n]}",
-                         f"{group_name}:{active_lines[n]}")
-                    )
-            
-            if not full_modif:
-                if not (ports_to_rename or group_to_rename):
-                    # nothing really changed in the text
-                    return
+        group_renamed = tuple[str, str]()
+        port_renamed = tuple[str, str, str]()
+        tuple_conns = list[tuple[str, str]]()
+        changed_line_n = -1
+        gp_name = ''
         
-            # if not full_modif and (ports_to_rename or group_to_rename):
+        text_lines = text.split('\n')
 
-                if group_to_rename is not None:
-                    print('oupsaa', group_to_rename)
-                    old_gp_name, new_gp_name = group_to_rename
-                    for gpos in self.group_positions:
-                        if gpos.group_name == old_gp_name:
-                            gpos.group_name = new_gp_name
+        # check if there is only one line changed
+        if len(text_lines) == len(self._last_text_lines):
+            for n in range(len(text_lines)):
+                if text_lines[n].startswith('::'):
+                    gp_name = text_lines[n][2:]
+
+                if text_lines[n] != self._last_text_lines[n]:
+                    if changed_line_n >= 0:
+                        changed_line_n = -1
+                        break
+                    changed_line_n = n
+        
+        if changed_line_n >= 0:
+            # One line only has changed.
+            # If it is a group line definition,
+            # we will first remember and modify group positions
+            # and connections.
+            old_text = self._last_text_lines[changed_line_n]
+            new_text = text_lines[changed_line_n]
+
+            if old_text.startswith('::') and new_text.startswith('::'):
+                # group is renamed
+                old_group, new_group = old_text[2:], new_text[2:]
+                if new_group and old_group:
+                    group_renamed = (old_group, new_group)
+
+                elif new_group:
+                    rb = self._rename_buffer
+                    
+                    if (rb is not None
+                            and rb.line == changed_line_n
+                            and not rb.gp_name):
+                        group_renamed = (rb.old, new_group)
+                        tuple_conns.extend(rb.renamed_conns(new_group))
+
+                    self._rename_buffer = None
+
+                elif old_group:                    
+                    rb = RenameBuffer(changed_line_n, old_group)
+                    for conn in self.connections:
+                        out_p = conn.port_out.full_name
+                        in_p = conn.port_in.full_name
+                        
+                        if (out_p.startswith(rb.old + ':')
+                                or in_p.startswith(rb.old + ':')):
+                            rb.conns.append((out_p, in_p))
+                    
+                    self._rename_buffer = rb
+            
+            elif (gp_name
+                    and not old_text.startswith(':')
+                    and not new_text.startswith(':')):
+                old_p_name, new_p_name = old_text, new_text
                 
-                    group = self.get_group_from_name(old_gp_name)
-                    if group is not None:
-                        ports_to_add = list[tuple[str, int, int, int]]()
-                        conns_to_remove = list[Connection]()
-                        conns_to_add = list[tuple[str, str]]()
+                if old_p_name and new_p_name:
+                    port_renamed = (gp_name, old_p_name, new_p_name)
+
+                elif new_p_name:
+                    rb = self._rename_buffer
+                    if (rb is not None
+                            and rb.line == changed_line_n
+                            and rb.gp_name == gp_name):
+                        port_renamed = (gp_name, rb.old, new_p_name)
+                        tuple_conns.extend(rb.renamed_conns(new_p_name))
+
+                elif old_p_name:
+                    rb = RenameBuffer(changed_line_n, old_p_name, gp_name)
+                    for conn in self.connections:
+                        out_p = conn.port_out.full_name
+                        in_p = conn.port_in.full_name
                         
-                        for port in group.ports:
-                            new_port_name = \
-                                f"{new_gp_name}:{port.full_name.partition(':')[2]}"
-
-                            ports_to_add.append((
-                                new_port_name,
-                                port.type.value, port.flags, port.uuid))
-
-                            if port.mode() is PortMode.OUTPUT:
-                                for conn in self.connections:
-                                    if (conn.port_out is port
-                                            and not conn in conns_to_remove):
-                                        conns_to_remove.append(conn)
-
-                                        if conn.port_in in group.ports:
-                                            conns_to_add.append(
-                                                (new_port_name,
-                                                 f"{new_gp_name}:{conn.port_in.full_name.partition(':')[2]}")
-                                            )
-                                        else:
-                                            conns_to_add.append(
-                                                (new_port_name,
-                                                 conn.port_in.full_name))
-
-                            elif port.mode() is PortMode.INPUT:
-                                for conn in self.connections:
-                                    if (conn.port_in is port
-                                            and not conn in conns_to_remove):
-                                        conns_to_remove.append(conn)
-                                        if conn.port_out in group.ports:
-                                            conns_to_add.append(
-                                                (f"{new_gp_name}:{conn.port_out.full_name.   partition(':')[2]}",
-                                                 new_port_name)
-                                            )
-                                        else:
-                                            conns_to_add.append(
-                                                (conn.port_out.full_name,
-                                                 new_port_name))
-                        
-                        self.optimize_operation(True)
-                        
-                        for conn in conns_to_remove:
-                            conn.remove_from_canvas()
-                            self.connections.remove(conn)
+                        if gp_name + ':' + old_p_name in (out_p, in_p):
+                            rb.conns.append((out_p, in_p))
                             
-                        group.remove_all_ports()
-                        group.remove_from_canvas()
-                        if group in self.groups:
-                            self.groups.remove(group)
-                        
-                        self.very_fast_operation = True
-                        
-                        for port_name, port_type, flags, uuid in ports_to_add:
-                            group_id = self.add_port(port_name, port_type, flags, uuid)
+                    self._rename_buffer = rb
+        else:
+            self._rename_buffer = None
 
-                        group = self.get_group_from_id(group_id)
-                        if group is not None:
-                            group.sort_ports_in_canvas()
-                        
-                        for port_out_name, port_in_name in conns_to_add:
-                            self.add_connection(port_out_name, port_in_name)
-                        
-                        self.very_fast_operation = False
-                        
-                        if group is not None:
-                            group.add_all_ports_to_canvas()
-                        
-                        for connection in self.connections:
-                            connection.add_to_canvas()
-                        
-                        self.optimize_operation(False)
-                        
-                        if group is not None:
-                            group.redraw_in_canvas()
-                        else:
-                            self.redraw_all_groups()
-                        
-                        # self.redraw_all_groups()
+        self._last_text_lines = text_lines.copy()            
 
-                elif ports_to_rename:
-                    print('rogg', ports_to_rename)
-                    for old_name, new_name in ports_to_rename:
-                        self.rename_port(old_name, new_name)
+        # remember (and rename) all connections.
+        # in case of simple line renaming, 
+        # remember alse group positions ans portgroups
+        if group_renamed:
+            for gpos in self.group_positions:
+                if gpos.group_name == group_renamed[0]:
+                    gpos.group_name = group_renamed[1]
+                    
+            for pg_mem in self.portgroups_memory:
+                if pg_mem.group_name == group_renamed[0]:
+                    pg_mem.group_name = group_renamed[1]
+            
+            for conn in self.connections:
+                out_p = conn.port_out.full_name
+                in_p = conn.port_in.full_name
                 
-                    # self.very_fast_operation = False
-                    self.optimize_operation(False)
-                    self.redraw_all_groups()
-                self._last_active_lines.clear()
-                self._last_active_lines = active_lines
-                return
+                if out_p.startswith(group_renamed[0] + ':'):
+                    out_p = group_renamed[1] + ':' + out_p.partition(':')[2]
+                if in_p.startswith(group_renamed[0] + ':'):
+                    in_p = group_renamed[1] + ':' + in_p.partition(':')[2]
+
+                tuple_conns.append((out_p, in_p))
+
+        elif port_renamed:
+            gp_name, old_p_name, new_p_name = port_renamed
+            
+            for pg_mem in self.portgroups_memory:
+                if pg_mem.group_name == gp_name:
+                    new_port_names = list[str]()
+
+                    for port_name in pg_mem.port_names:
+                        if port_name == old_p_name:
+                            port_name = new_p_name
+                            
+                        new_port_names.append(port_name)
+
+                    pg_mem.port_names.clear()
+                    pg_mem.port_names.extend(new_port_names)
+                    print('og', pg_mem.port_names)
+            
+            for conn in self.connections:
+                out_p = conn.port_out.full_name
+                in_p = conn.port_in.full_name
                 
+                if out_p == gp_name + ':' + old_p_name:
+                    out_p = gp_name + ':' + new_p_name
+                if in_p == gp_name + ':' + old_p_name:
+                    in_p = gp_name + ':' + new_p_name
+                    
+                tuple_conns.append((out_p, in_p))
+        else:
+            tuple_conns = [(c.port_out.full_name, c.port_in.full_name)
+                           for c in self.connections]
 
         log_lines = list[str]() 
         group_names_added = set[str]()
@@ -317,8 +330,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         port_uuid = 0
 
         added_ports = set[str]()
-        tuple_conns = [(c.port_out.full_name, c.port_in.full_name)
-                       for c in self.connections]
+        
         self.clear_all()
         self.optimize_operation(True)
         self.very_fast_operation = True
@@ -336,6 +348,8 @@ class PatchichiPatchbayManager(PatchbayManager):
                 if tmp_group_name in group_names_added:
                     _log(f'"{tmp_group_name}" group has been already added !!!')
                     continue
+                elif not tmp_group_name:
+                    _log(f" group name is empty !")
 
                 group_name = tmp_group_name
                 portgroup = ''
@@ -466,8 +480,8 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.optimize_operation(False)        
         self.redraw_all_groups()
         
-        self._last_active_lines.clear()
-        self._last_active_lines = active_lines
+        self._last_text_lines.clear()
+        self._last_text_lines = text_lines
         
         self.main_win.set_logs_text('\n'.join(log_lines))
     
@@ -591,10 +605,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                 contents += f":> {port_in}\n"
         
         self.main_win.set_logs_text(contents)
-        
-        print(self.export_port_list())
-        print(self.get_existing_connections())
-        print(self.get_existing_positions())
     
     def set_group_as_nsm_client(self, group: Group):
         icon_name = self._gp_client_icons.get(group.name)
@@ -637,9 +647,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         editor_text = self.main_win.get_editor_text()
         
-        for gpos in self.group_positions:
-            print('gpos:', gpos.group_name, gpos.flags)
-        
         file_dict['editor_text'] = editor_text
         conn_list = list[tuple[str, str]]()
         for conn in self.connections:
@@ -659,7 +666,7 @@ class PatchichiPatchbayManager(PatchbayManager):
             for port_str in pg_mem.port_names:
                 for port in group.ports:
                     if (port.short_name() == port_str
-                            and port.type() == pg_mem.port_type
+                            and port.type == pg_mem.port_type
                             and port.mode() == pg_mem.port_mode):
                         portgroups.append(pg_mem.as_serializable_dict())
                         break
@@ -696,9 +703,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         for gpos_dict in group_positions:
             self.group_positions.append(
                 GroupPos.from_serialized_dict(gpos_dict))
-
-        for gpos in self.group_positions:
-            print('gposin', gpos.port_types_view, gpos.group_name, gpos.flags)
 
         for gp_mem_dict in portgroups:
             self.portgroups_memory.append(
