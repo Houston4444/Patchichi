@@ -177,7 +177,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                       default_theme_name='Yellow Boards')
 
     def refresh(self):
-        super().refresh()
+        self.update_from_text(self.main_win.ui.plainTextEditPorts.toPlainText())
     
     def _check_port_or_group_renaming(self, text: str) -> list[tuple[str, str]]:
         '''checks if there is a group or a port renamed only in editor,
@@ -289,8 +289,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                         rb.conns.append((out_p, in_p))
                         
                 self._rename_buffer = rb
-
-                    
 
         # remember (and rename) all connections.
         # in case of simple line renaming, 
