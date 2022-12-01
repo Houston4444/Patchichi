@@ -5,8 +5,9 @@ from pathlib import Path
 from re import L
 from typing import TYPE_CHECKING, Optional
 from PyQt5.QtWidgets import (
-    QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog)
-from PyQt5.QtCore import Qt, pyqtSlot
+    QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
+    QVBoxLayout, QFrame)
+from PyQt5.QtCore import Qt, pyqtSlot, QTimer
 
 from about_dialog import AboutDialog
 from editor_help_dialog import EditorHelpDialog
@@ -77,6 +78,23 @@ class MainWindow(QMainWindow):
         
         self.ui.plainTextEditPorts.textChanged.connect(self._text_changed)
         
+        self.ui.checkBoxAutoUpdate.stateChanged.connect(
+            self._auto_update_changed)
+        self.ui.pushButtonUpdatePatchbay.clicked.connect(
+            self.refresh_patchbay)
+        self.ui.pushButtonUpdatePatchbay.setVisible(False)
+        self._editor_update_timer = QTimer()
+        self._editor_update_timer.setInterval(100)
+        self._editor_update_timer.setSingleShot(True)
+        # self._editor_update_timer.timeout.connect(
+        #     self.update_patchbay_from_editor_text)
+        splitter_handle = self.ui.splitterPortsVsLogs.handle(1)
+        layout = QVBoxLayout(splitter_handle)
+        self._splitter_line = QFrame(splitter_handle)
+        self._splitter_line.setFrameShape(QFrame.HLine)
+        self._splitter_line.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(self._splitter_line)
+        
         self.ui.graphicsView.setFocus()
         
         self._current_path: Optional[Path] = None
@@ -128,12 +146,21 @@ class MainWindow(QMainWindow):
         dialog = AboutDialog(self)
         dialog.exec()
     
+    def _auto_update_changed(self, state: int):
+        self.ui.pushButtonUpdatePatchbay.setVisible(not bool(state))
+        if state and self.patchbay_manager is not None:
+            self.patchbay_manager.update_from_text(
+                self.get_editor_text())
+    
     def _text_changed(self):
+        if not self.ui.checkBoxAutoUpdate.isChecked():
+            return
+        
         if self.patchbay_manager is None:
             return
         
         self.patchbay_manager.update_from_text(
-            self.ui.plainTextEditPorts.toPlainText())
+            self.get_editor_text())
     
     def get_editor_text(self) -> str:
         return self.ui.plainTextEditPorts.toPlainText()

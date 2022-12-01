@@ -120,38 +120,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         # if a group is renamed (changing only its line definition),
         # it is only used when the group name is set to empty
         self._rename_buffer: Optional[RenameBuffer] = None
-
-        # if settings is not None:
-        #     self._memory_path = Path(
-        #         settings.fileName()).parent.joinpath(MEMORY_FILE)
-
-        #     try:
-        #         with open(self._memory_path, 'r') as f:                
-        #             json_dict = json.load(f)
-        #             assert isinstance(json_dict, dict)
-        #     except FileNotFoundError:
-        #         _logger.warning(f"File {self._memory_path} has not been found,"
-        #                         "It is probably the first startup.")
-        #         return
-        #     except:
-        #         _logger.warning(f"File {self._memory_path} is incorrectly written"
-        #                         "it will be ignored.")
-        #         return
-            
-        #     if 'group_positions' in json_dict.keys():
-        #         gposs = json_dict['group_positions']
-
-        #         for gpos in gposs:
-        #             if isinstance(gpos, dict):
-        #                 self.group_positions.append(
-        #                     GroupPos.from_serialized_dict(gpos))
-            
-        #     if 'portgroups' in json_dict.keys():
-        #         pg_mems = json_dict['portgroups']
-
-        #         for pg_mem_dict in pg_mems:
-        #             self.portgroups_memory.append(
-        #                 PortgroupMem.from_serialized_dict(pg_mem_dict))
+        self._prevent_next_editor_update = False
     
     def _setup_canvas(self):
         SUBMODULE = 'HoustonPatchbay'
@@ -350,6 +319,10 @@ class PatchichiPatchbayManager(PatchbayManager):
         def _log(string: str):
             _logger.warning(f'line {line_n}:{string}')
             log_lines.append(f'line {line_n} : {string}')
+
+        if self._prevent_next_editor_update:
+            self._prevent_next_editor_update = False
+            return
 
         tuple_conns = self._check_port_or_group_renaming(text)
 
@@ -633,7 +606,10 @@ class PatchichiPatchbayManager(PatchbayManager):
             else:
                 self.portgroups_memory.append(pg_mem)
 
+        self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
+        self._prevent_next_editor_update = False
+        self.update_from_text(self.main_win.get_editor_text())
         
         for port_out_name, port_in_name in connections:
             self.add_connection(port_out_name, port_in_name)

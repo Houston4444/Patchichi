@@ -45,8 +45,11 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
+       <property name="opaqueResize">
+        <bool>true</bool>
+       </property>
        <property name="handleWidth">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QFrame" name="frameEditor">
         <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -90,7 +93,8 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset theme="help-about"/>
+              <iconset theme="help-about">
+               <normaloff>.</normaloff>.</iconset>
              </property>
             </widget>
            </item>
@@ -105,10 +109,70 @@
            </property>
           </widget>
          </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAutoUpdate">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update the patchbay at each text modification. It can makes the editor very slow.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Auto update</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonUpdatePatchbay">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>Ctrl+R | F5</string>
+             </property>
+             <property name="text">
+              <string>Update the patchbay</string>
+             </property>
+             <property name="icon">
+              <iconset theme="view-refresh"/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
        <widget class="QFrame" name="frameLogs">
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QLabel" name="label">
            <property name="font">
@@ -260,7 +324,7 @@
   </action>
   <action name="actionAboutPatchichi">
    <property name="icon">
-    <iconset>
+    <iconset resource="../resources.qrc">
      <normaloff>:/main_icon/scalable/patchichi.svg</normaloff>:/main_icon/scalable/patchichi.svg</iconset>
    </property>
    <property name="text">
