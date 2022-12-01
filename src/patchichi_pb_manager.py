@@ -179,11 +179,10 @@ class PatchichiPatchbayManager(PatchbayManager):
     def refresh(self):
         super().refresh()
     
-    def update_from_text(self, text: str):
-        def _log(string: str):
-            _logger.warning(f'line {line_n}:{string}')
-            log_lines.append(f'line {line_n} : {string}')
-
+    def _check_port_or_group_renaming(self, text: str) -> list[tuple[str, str]]:
+        '''checks if there is a group or a port renamed only in editor,
+            renames group positions, portgroups, and connections,
+            returns list of connections as tuple[str, str]'''
         group_renamed = tuple[str, str]()
         port_renamed = tuple[str, str, str]()
         tuple_conns = list[tuple[str, str]]()
@@ -328,6 +327,15 @@ class PatchichiPatchbayManager(PatchbayManager):
         else:
             tuple_conns = [(c.port_out.full_name, c.port_in.full_name)
                            for c in self.connections]
+            
+        return tuple_conns
+    
+    def update_from_text(self, text: str):
+        def _log(string: str):
+            _logger.warning(f'line {line_n}:{string}')
+            log_lines.append(f'line {line_n} : {string}')
+
+        tuple_conns = self._check_port_or_group_renaming(text)
 
         log_lines = list[str]() 
         group_names_added = set[str]()
@@ -343,6 +351,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         port_uuid = 0
 
         added_ports = set[str]()
+        
+        # at each editor text modification
+        # the patchbay elements are fully remade.
         
         self.clear_all()
         self.optimize_operation(True)
@@ -492,9 +503,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
         self.optimize_operation(False)        
         self.redraw_all_groups()
-        
-        self._last_text_lines.clear()
-        self._last_text_lines = text_lines
         
         self.main_win.set_logs_text('\n'.join(log_lines))
     
