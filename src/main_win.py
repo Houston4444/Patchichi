@@ -12,8 +12,10 @@ from about_dialog import AboutDialog
 from editor_help_dialog import EditorHelpDialog
 from patchbay.tools_widgets import PatchbayToolsWidget
 from patchbay.base_elements import ToolDisplayed
+from patchbay.patchcanvas import xdg
 
 from ui.main_win import Ui_MainWindow
+from xdg import xdg_data_home
 
 
 if TYPE_CHECKING:
@@ -168,13 +170,13 @@ class MainWindow(QMainWindow):
         self.ui.textEditLogs.setPlainText(text)
 
     def _get_scenes_path(self) -> Path:
-        scenes_dir = Path(self.settings.fileName()).parent / 'scenes'
+        scenes_dir = xdg_data_home() / 'Patchichi' / 'scenes'
         try:
             if not scenes_dir.exists():
                 scenes_dir.mkdir()
         except:
-            return Path(os.getenv('HOME'))
-        
+            return Path.home()
+
         return scenes_dir
     
     @pyqtSlot()

@@ -523,96 +523,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
-    
-    def export_port_list(self) -> str:
-        def slcol(input_str: str) -> str:
-            return input_str.replace(':', '\\:')
-        
-        contents = ''
-        
-        gps_and_ports = list[tuple[str, list[Port]]]()
-        for group in self.groups:
-            for port in group.ports:
-                group_name = port.full_name.partition(':')[0]
-                for gp_name, gp_port_list in gps_and_ports:
-                    if gp_name == group_name:
-                        gp_port_list.append(port)
-                        break
-                else:
-                    gps_and_ports.append((group_name, [port]))
-
-        for group_name, port_list in gps_and_ports:
-            port_list.sort(key=operator.attrgetter('port_id'))
-                
-        for group_name, port_list in gps_and_ports:
-            gp_written = False              
-            last_type_and_mode = (PortType.NULL, PortMode.NULL)
-            physical = False
-            pg_name = ''
-
-            for port in port_list:
-                if not gp_written:
-                    contents += f'\n::{group_name}\n'
-                    gp_written = True
-
-                    group = self.get_group_from_name(group_name)
-                    if group is not None:
-                        group_attrs = list[str]()
-                        if group.client_icon:
-                            group_attrs.append(f'CLIENT_ICON={slcol(group.client_icon)}')
-                            
-                        if group.mdata_icon:
-                            group_attrs.append(f'ICON_NAME={slcol(group.mdata_icon)}')
-
-                        if group.has_gui:
-                            if group.gui_visible:
-                                group_attrs.append('GUI_VISIBLE')
-                            else:
-                                group_attrs.append('GUI_HIDDEN')
-                        if group_attrs:
-                            contents += ':'
-                            contents += ':'.join(group_attrs)
-
-                if port.flags & JackPortFlag.IS_PHYSICAL:
-                    if not physical:
-                        contents += ':PHYSICAL\n'
-                        physical = True
-                elif physical:
-                    contents += ':~PHYSICAL\n'
-                    physical = False
-
-                if last_type_and_mode != (port.type, port.mode()):
-                    if port.type is PortType.AUDIO_JACK:
-                        if port.flags & JackPortFlag.IS_CONTROL_VOLTAGE:
-                            contents += ':CV'
-                        else:
-                            contents += ':AUDIO'
-                    elif port.type is PortType.MIDI_JACK:
-                        contents += ':MIDI'
-
-                    contents += f':{port.mode().name}\n'
-                    last_type_and_mode = (port.type, port.mode())
-                
-                if port.mdata_portgroup != pg_name:
-                    if port.mdata_portgroup:
-                        contents += f':PORTGROUP={slcol(port.mdata_portgroup)}\n'
-                    else:
-                        contents += ':~PORTGROUP\n'
-                    pg_name = port.mdata_portgroup
-
-                port_short_name = port.full_name.partition(':')[2]
-                contents += f'{port_short_name}\n'
-                
-                if port.pretty_name or port.order:
-                    port_attrs = list[str]()
-                    if port.pretty_name:
-                        port_attrs.append(f'PRETTY_NAME={slcol(port.pretty_name)}')
-                    if port.order:
-                        port_attrs.append(f'PORT_ORDER={port.order}')
-                    contents += '\n'
-                    contents += ':'.join(port_attrs)
-
-        return contents
 
     def get_existing_connections(self) -> list[tuple[str, str]]:
         return_list = list[tuple[str, str]]()
@@ -683,44 +593,9 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
     def save_file_to(self, path: Path) -> bool:
         _logger.info(f'saving file {str(path)}')
-
-        file_dict = dict[str, Any]()
         
-        editor_text = self.main_win.get_editor_text()
-        
-        file_dict['editor_text'] = editor_text
-        conn_list = list[tuple[str, str]]()
-        for conn in self.connections:
-            conn_list.append(
-                (conn.port_out.full_name, conn.port_in.full_name))
-        file_dict['connections'] = conn_list
-        file_dict['group_positions'] = [
-            gpos.as_serializable_dict() for gpos in self.group_positions
-            if self.get_group_from_name(gpos.group_name) is not None]
-        
-        portgroups = list[dict[str, Any]]()
-        for pg_mem in self.portgroups_memory:
-            group = self.get_group_from_name(pg_mem.group_name)
-            if group is None:
-                continue
-
-            for port_str in pg_mem.port_names:
-                for port in group.ports:
-                    if (port.short_name() == port_str
-                            and port.type == pg_mem.port_type
-                            and port.mode() == pg_mem.port_mode):
-                        portgroups.append(pg_mem.as_serializable_dict())
-                        break
-        
-        file_dict['portgroups'] = portgroups
-
-        try:
-            with open(path, 'w') as f:
-                json.dump(file_dict, f, indent=2)
-            return True
-        except Exception as e:
-            _logger.error(f'Failed to save patchichi file: {str(e)}')
-            return False
+        self.export_to_patchichi_json(
+            path, self.main_win.get_editor_text())
 
     def load_file(self, path: Path) -> bool:
         try:
