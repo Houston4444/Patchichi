@@ -12,16 +12,19 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    Connection, GroupPos, JackPortFlag, Port, PortgroupMem, Group)
+    GroupPos, JackPortFlag, Port, PortgroupMem, Group)
 from patchbay import (
     CanvasMenu,
     Callbacker,
     CanvasOptionsDialog,
-    PatchbayManager,
-    patchcanvas)
-from patchbay.patchbay_manager import JACK_METADATA_ICON_NAME, JACK_METADATA_ORDER, JACK_METADATA_PORT_GROUP, JACK_METADATA_PRETTY_NAME, later_by_batch
+    PatchbayManager)
+from patchbay.patchbay_manager import (
+    JACK_METADATA_ICON_NAME,
+    JACK_METADATA_ORDER,
+    JACK_METADATA_PORT_GROUP,
+    JACK_METADATA_PRETTY_NAME,
+    later_by_batch)
 from patchbay.patchcanvas.init_values import PortMode, PortType
-from patchbay.patchcanvas.patchcanvas import add_port
 
 from tools import get_code_root
 import xdg
@@ -31,11 +34,18 @@ if TYPE_CHECKING:
     from patchichi import Main
 
 _logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
 
 MEMORY_FILE = 'canvas.json'
 
 
 class RenameBuffer:
+    '''This serves for group or port renaming
+       with the editor. This is only used when the group name
+       or the port name becomes empty.
+       If one and only one line has changed since last update
+       Connections, group positions and portgroups memories
+       will be renamed'''
     def __init__(self, line: int, old: str, gp_name=''):
         self.line = line
         self.old = old
@@ -111,37 +121,37 @@ class PatchichiPatchbayManager(PatchbayManager):
         # it is only used when the group name is set to empty
         self._rename_buffer: Optional[RenameBuffer] = None
 
-        if settings is not None:
-            self._memory_path = Path(
-                settings.fileName()).parent.joinpath(MEMORY_FILE)
+        # if settings is not None:
+        #     self._memory_path = Path(
+        #         settings.fileName()).parent.joinpath(MEMORY_FILE)
 
-            try:
-                with open(self._memory_path, 'r') as f:                
-                    json_dict = json.load(f)
-                    assert isinstance(json_dict, dict)
-            except FileNotFoundError:
-                _logger.warning(f"File {self._memory_path} has not been found,"
-                                "It is probably the first startup.")
-                return
-            except:
-                _logger.warning(f"File {self._memory_path} is incorrectly written"
-                                "it will be ignored.")
-                return
+        #     try:
+        #         with open(self._memory_path, 'r') as f:                
+        #             json_dict = json.load(f)
+        #             assert isinstance(json_dict, dict)
+        #     except FileNotFoundError:
+        #         _logger.warning(f"File {self._memory_path} has not been found,"
+        #                         "It is probably the first startup.")
+        #         return
+        #     except:
+        #         _logger.warning(f"File {self._memory_path} is incorrectly written"
+        #                         "it will be ignored.")
+        #         return
             
-            if 'group_positions' in json_dict.keys():
-                gposs = json_dict['group_positions']
+        #     if 'group_positions' in json_dict.keys():
+        #         gposs = json_dict['group_positions']
 
-                for gpos in gposs:
-                    if isinstance(gpos, dict):
-                        self.group_positions.append(
-                            GroupPos.from_serialized_dict(gpos))
+        #         for gpos in gposs:
+        #             if isinstance(gpos, dict):
+        #                 self.group_positions.append(
+        #                     GroupPos.from_serialized_dict(gpos))
             
-            if 'portgroups' in json_dict.keys():
-                pg_mems = json_dict['portgroups']
+        #     if 'portgroups' in json_dict.keys():
+        #         pg_mems = json_dict['portgroups']
 
-                for pg_mem_dict in pg_mems:
-                    self.portgroups_memory.append(
-                        PortgroupMem.from_serialized_dict(pg_mem_dict))
+        #         for pg_mem_dict in pg_mems:
+        #             self.portgroups_memory.append(
+        #                 PortgroupMem.from_serialized_dict(pg_mem_dict))
     
     def _setup_canvas(self):
         SUBMODULE = 'HoustonPatchbay'
@@ -180,6 +190,8 @@ class PatchichiPatchbayManager(PatchbayManager):
         changed_line_n = -1
         gp_name = ''
         
+        # we don't use splitlines() here, because it doesn't gives
+        # the last line if it is empty.
         text_lines = text.split('\n')
 
         # check if there is only one line changed
@@ -234,8 +246,9 @@ class PatchichiPatchbayManager(PatchbayManager):
             elif (gp_name
                     and not old_text.startswith(':')
                     and not new_text.startswith(':')):
+                # port is renamed
                 old_p_name, new_p_name = old_text, new_text
-                
+
                 if old_p_name and new_p_name:
                     port_renamed = (gp_name, old_p_name, new_p_name)
 
@@ -264,7 +277,8 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         # remember (and rename) all connections.
         # in case of simple line renaming, 
-        # remember alse group positions ans portgroups
+        # remember also group positions and portgroups
+
         if group_renamed:
             for gpos in self.group_positions:
                 if gpos.group_name == group_renamed[0]:
@@ -300,7 +314,6 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                     pg_mem.port_names.clear()
                     pg_mem.port_names.extend(new_port_names)
-                    print('og', pg_mem.port_names)
             
             for conn in self.connections:
                 out_p = conn.port_out.full_name
@@ -643,6 +656,8 @@ class PatchichiPatchbayManager(PatchbayManager):
                 _logger.warning(str(e))
                 
     def save_file_to(self, path: Path) -> bool:
+        _logger.info(f'saving file {str(path)}')
+
         file_dict = dict[str, Any]()
         
         editor_text = self.main_win.get_editor_text()
@@ -687,14 +702,21 @@ class PatchichiPatchbayManager(PatchbayManager):
                 json_dict = json.load(f)
                 assert isinstance(json_dict, dict)
         except Exception as e:
-            _logger.error(f'Failed to open file "{str(Path)}", {str(e)}')
+            _logger.error(f'Failed to open file "{str(path)}", {str(e)}')
             return False
 
-        editor_text: str = json_dict['editor_text']
-        connections: list[tuple[str, str]] = json_dict['connections']
-        group_positions: list[dict] = json_dict['group_positions']
-        portgroups: list[dict] = json_dict['portgroups']
+        try:
+            editor_text: str = json_dict['editor_text']
+            connections: list[tuple[str, str]] = json_dict['connections']
+            group_positions: list[dict] = json_dict['group_positions']
+            portgroups: list[dict] = json_dict['portgroups']
+        except:
+            _logger.error(
+                f'Failed to open file "{str(path)}, contents are incomplete')
+            return False
 
+        _logger.info(f'Loading file {str(path)}')
+            
         self.clear_all()
 
         self.group_positions.clear()
@@ -705,10 +727,15 @@ class PatchichiPatchbayManager(PatchbayManager):
                 GroupPos.from_serialized_dict(gpos_dict))
 
         for gp_mem_dict in portgroups:
-            self.portgroups_memory.append(
-                PortgroupMem.from_serialized_dict(gp_mem_dict))
+            pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
+            for already_here in self.portgroups_memory:
+                if pg_mem.has_a_common_port_with(already_here):
+                    break
+            else:
+                self.portgroups_memory.append(pg_mem)
 
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
+        
         for port_out_name, port_in_name in connections:
             self.add_connection(port_out_name, port_in_name)
 
