@@ -186,12 +186,10 @@ class MainWindow(QMainWindow):
             _translate('file_dialog', 'Patchichi files (*.patchichi.json)'))
 
         if ok:
-            print('ouoiu')
             if self.patchbay_manager.load_file(Path(ret)):
-                print('orfkeorfke')
                 self._current_path = Path(ret)
-                scene_name = self._current_path.name.rpartition('.patchichi.json')[0]
-                print('scene name', scene_name)
+                scene_name = self._current_path.name.rpartition(
+                    '.patchichi.json')[0]
                 self.setWindowTitle(
                     f"Patchichi - {scene_name}")
     
@@ -216,19 +214,14 @@ class MainWindow(QMainWindow):
         if not ok:
             return
 
-        print('oizded')
-
         if self.patchbay_manager.save_file_to(Path(ret)):
-            print('sldkdkf')
             self._current_path = Path(ret)
             scene_name = self._current_path.name.rpartition('.patchichi.json')[0]
-            print('scene name', scene_name)
             self.setWindowTitle(
                 f"Patchichi - {scene_name}")
 
     @pyqtSlot()
     def _show_editor_help(self):
-        print('houhouoz')
         dialog = EditorHelpDialog(self)
         dialog.show()
         

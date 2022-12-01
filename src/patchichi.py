@@ -28,6 +28,7 @@ import logging
 
 from dataclasses import dataclass
 from os.path import dirname
+from pathlib import Path
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon, QFontDatabase
@@ -110,9 +111,15 @@ def main_loop():
     main_win.finish_init(main)
     main_win.show()
 
+    last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
+    pb_manager.load_file(last_patch)
+
     app.exec()
     settings.sync()
     pb_manager.save_patchcanvas_cache()
+    
+    pb_manager.save_file_to(last_patch)
+    
     del app
 
 
