@@ -1,12 +1,9 @@
 
 
-from dataclasses import dataclass
 import json
 import logging
-import operator
 from pathlib import Path
-from sqlite3 import connect
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
@@ -23,8 +20,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_ORDER,
     JACK_METADATA_PORT_GROUP,
     JACK_METADATA_PRETTY_NAME,
-    JACK_METADATA_SIGNAL_TYPE,
-    later_by_batch)
+    JACK_METADATA_SIGNAL_TYPE)
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
 
@@ -104,6 +100,34 @@ class PatchichiCallbacker(Callbacker):
                 self.mng.remove_connection(
                     conn.port_out.full_name, conn.port_in.full_name)
                 break
+            
+    def _group_selected(self, group_id: int, splitted_mode: PortMode):
+        group = self.mng.get_group_from_id(group_id)
+        if group is None:
+            return
+        
+        text_lines = self.mng.main_win.get_editor_text().splitlines()
+        for i in range(len(text_lines)):
+            line = text_lines[i]
+            if line == '::' + group.name:
+                print(line, i + 1)
+                self.mng.main_win.ui.plainTextEditPorts.move_cursor_to_line(i)
+                break
+        else:
+            # this works to find a2j or MidiBridge groups when they are in
+            # not grouped mode.
+            if not group.ports:
+                return
+
+            port = group.ports[0]
+            gp_name = port.full_name.partition(':')[0]
+            for i in range(len(text_lines)):
+                line = text_lines[i]
+                if line == '::' + gp_name:
+                    self.mng.main_win.ui.plainTextEditPorts.move_cursor_to_line(i)
+                    break
+            
+            
 
 
 class PatchichiPatchbayManager(PatchbayManager):
@@ -512,37 +536,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
-
-    def get_existing_connections(self) -> list[tuple[str, str]]:
-        return_list = list[tuple[str, str]]()
-        for conn in self.connections:
-            return_list.append(
-                (conn.port_out.full_name, conn.port_in.full_name))
-        return return_list
-    
-    def get_existing_positions(self) -> list[GroupPos]:
-        return [gpos for gpos in self.group_positions
-                if gpos.group_name in [g.name for g in self.groups]]
-
-    @later_by_batch()
-    def rewrite_connections_text(self):
-        conns_dict = dict[str, list[str]]()
-        
-        for conn in self.connections:
-            out_list = conns_dict.get(conn.port_out.full_name)
-            if out_list is None:
-                conns_dict[conn.port_out.full_name] = [conn.port_in.full_name]
-            else:
-                out_list.append(conn.port_in.full_name)
-        
-        contents = ''    
-            
-        for port_out, ports_in in conns_dict.items():
-            contents += f"{port_out}\n"
-            for port_in in ports_in:
-                contents += f":> {port_in}\n"
-        
-        self.main_win.set_logs_text(contents)
     
     def set_group_as_nsm_client(self, group: Group):
         icon_name = self._gp_client_icons.get(group.name)
@@ -563,22 +556,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         # prevent 'Jack is not running' red label to be displayed
         self.server_started()
-
-    def save_positions(self):        
-        gposs_as_dicts = [gpos.as_serializable_dict()
-                          for gpos in self.group_positions]
-        pg_mems_as_dict = [pg_mem.as_serializable_dict()
-                           for pg_mem in self.portgroups_memory]
-        
-        full_dict = {'group_positions': gposs_as_dicts,
-                     'portgroups': pg_mems_as_dict}
-        
-        if self._memory_path is not None:
-            try:
-                with open(self._memory_path, 'w') as f:
-                    json.dump(full_dict, f, indent=4)
-            except Exception as e:
-                _logger.warning(str(e))
                 
     def save_file_to(self, path: Path) -> bool:
         _logger.info(f'saving file {str(path)}')

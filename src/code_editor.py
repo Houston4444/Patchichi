@@ -158,9 +158,6 @@ class CodeEditor(QPlainTextEdit):
         tc.insertText(completion)
         self.setTextCursor(tc)
 
-    def _get_completer(self):
-        return self._completer
-
     def _set_completer(self, completer_mode: LineMode):
         del self._completer
         
@@ -192,6 +189,14 @@ class CodeEditor(QPlainTextEdit):
         tc = self.textCursor()
         tc.select(QTextCursor.WordUnderCursor)
         return tc.selectedText()
+
+    def move_cursor_to_line(self, line_n: int):
+        docum = self.document()
+        block_count = docum.blockCount()
+        pre_tc = QTextCursor(docum.findBlockByNumber(block_count -1))
+        tc = QTextCursor(docum.findBlockByNumber(line_n))
+        self.setTextCursor(pre_tc)
+        self.setTextCursor(tc)
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
