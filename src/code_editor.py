@@ -10,7 +10,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtCore import Qt, QRect, QSize, QRegularExpression
 from patchbay.patchcanvas.init_values import BoxLayoutMode
 
-from string_sep import string_sep, PRE_ATTRIBUTES, POST_ATTRIBUTES
+from chichi_syntax import split_params, PRE_ATTRIBUTES, POST_ATTRIBUTES
 
 
 class LineMode(Enum):
@@ -281,7 +281,7 @@ class Highlighter(QSyntaxHighlighter):
                 self.setFormat(2, len(text) -1, self._group_format)
 
         elif text.startswith(':'):
-            for word, start, end, is_value in string_sep(
+            for word, start, end, is_value in split_params(
                     text, split_equal=True, get_splitter=True):
                 if is_value:
                     format = self._value_format

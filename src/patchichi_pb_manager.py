@@ -25,7 +25,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PRETTY_NAME,
     later_by_batch)
 from patchbay.patchcanvas.init_values import PortMode, PortType
-from string_sep import string_sep
+from chichi_syntax import split_params
 
 from tools import get_code_root
 import xdg
@@ -373,7 +373,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 port_flags = 0
 
             elif line.startswith(':'):
-                for param, *args in string_sep(line):
+                for param, *args in split_params(line):
                     if param == 'AUDIO':
                         port_type = PortType.AUDIO_JACK
                         port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE

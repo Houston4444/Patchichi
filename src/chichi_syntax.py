@@ -27,8 +27,8 @@ POST_ATTRIBUTES = (
     'CLIENT_ICON'
 )
 
-def string_sep(input_str: str, split_equal=False,
-               get_splitter=False) -> Iterator[tuple[str, int, int, bool]]:
+def split_params(input_str: str, split_equal=False,
+                 get_splitter=False) -> Iterator[tuple[str, int, int, bool]]:
     w_str = ''
     w_start = 0
     anti_end = False
@@ -68,5 +68,5 @@ if __name__ == '__main__':
                  ':AUDIO:OUTPUT', ':normz:fkoe"fokef"',
                  ':ICON_NAME=application-pdf:PRETTY_NAME=rantanplan']:
         print('___', stro, '___')
-        for strou in string_sep(stro, split_equal=True):
+        for strou in split_params(stro, split_equal=True):
             print(strou)
