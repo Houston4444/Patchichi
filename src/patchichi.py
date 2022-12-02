@@ -111,14 +111,25 @@ def main_loop():
     main_win.finish_init(main)
     main_win.show()
 
+    # auto load patch as it was at last exit
+    # It doesn't loads a saved scene
+    # 'Save file' action will ask 
     last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
-    pb_manager.load_file(last_patch)
+    if last_patch.is_file():
+        pb_manager.load_file(last_patch)
+    else:
+        default_patch = (Path(__file__).parent.parent
+                         / 'scenes' / 'default_cardboard.patchichi.json')
+        if default_patch.is_file():
+            pb_manager.load_file(default_patch)
 
     app.exec()
     settings.sync()
     pb_manager.save_patchcanvas_cache()
     
-    pb_manager.save_file_to(last_patch)
+    # save file to last patch if there are groups
+    if pb_manager.groups:
+        pb_manager.save_file_to(last_patch)
     
     del app
 

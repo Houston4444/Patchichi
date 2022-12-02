@@ -1,0 +1,105 @@
+{
+  "VERSION": [
+    0,
+    1
+  ],
+  "editor_text": "::Cardboard Case\n:PHYSICAL\n:AUDIO:OUTPUT\ncapture_1\ncapture_2\ncapture_3\ncapture_4\n:AUDIO:INPUT\nplayback_1\nplayback_2\nplayback_3\nplayback_4\n:MIDI:OUTPUT\nmidi_capture\n:MIDI:INPUT\nmidi_playback\n\n::Wind Instrument\n:ICON_NAME=arrow-right\n:AUDIO:OUTPUT\nout_L\nout_R\n:MIDI:INPUT\nmidi_in\n:CV:INPUT\nBreath control\n\n::Fake Mixer\n:ICON_NAME=jack_mixer\n:AUDIO:INPUT\nVocal_in\nWind _in_1\nWind _in_2\n:AUDIO:OUTPUT\nMixer_out_1\nMixer_out_2",
+  "connections": [
+    [
+      "Cardboard Case:midi_capture",
+      "Wind Instrument:midi_in"
+    ],
+    [
+      "Cardboard Case:capture_2",
+      "Wind Instrument:Breath control"
+    ],
+    [
+      "Cardboard Case:capture_1",
+      "Fake Mixer:Vocal_in"
+    ],
+    [
+      "Wind Instrument:out_L",
+      "Fake Mixer:Wind _in_1"
+    ],
+    [
+      "Wind Instrument:out_R",
+      "Fake Mixer:Wind _in_2"
+    ],
+    [
+      "Fake Mixer:Mixer_out_1",
+      "Cardboard Case:playback_1"
+    ],
+    [
+      "Fake Mixer:Mixer_out_2",
+      "Cardboard Case:playback_2"
+    ]
+  ],
+  "group_positions": [
+    {
+      "port_types_view": 15,
+      "group_name": "Cardboard Case",
+      "null_zone": "",
+      "in_zone": "",
+      "out_zone": "",
+      "null_xy": [
+        200,
+        0
+      ],
+      "in_xy": [
+        357,
+        -62
+      ],
+      "out_xy": [
+        -288,
+        -75
+      ],
+      "flags": 68,
+      "layout_modes": {
+        "2": 1
+      }
+    },
+    {
+      "port_types_view": 15,
+      "group_name": "Wind Instrument",
+      "null_zone": "",
+      "in_zone": "",
+      "out_zone": "",
+      "null_xy": [
+        -96,
+        28
+      ],
+      "in_xy": [
+        400,
+        26
+      ],
+      "out_xy": [
+        0,
+        26
+      ],
+      "flags": 0,
+      "layout_modes": {}
+    },
+    {
+      "port_types_view": 15,
+      "group_name": "Fake Mixer",
+      "null_zone": "",
+      "in_zone": "",
+      "out_zone": "",
+      "null_xy": [
+        100,
+        -90
+      ],
+      "in_xy": [
+        400,
+        69
+      ],
+      "out_xy": [
+        0,
+        69
+      ],
+      "flags": 0,
+      "layout_modes": {}
+    }
+  ],
+  "portgroups": []
+}
