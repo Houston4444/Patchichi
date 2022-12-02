@@ -3,9 +3,9 @@ bonne implémentation du logger
 voir trad
 
 zoom widget et port types view seulement
-save / load
+# save / load
 + quelques settings dans le fichier ?
-pas de mémoire globale
+# pas de mémoire globale
 help text du code
 full_screen
 # light theme code

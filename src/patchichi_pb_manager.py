@@ -25,6 +25,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PRETTY_NAME,
     later_by_batch)
 from patchbay.patchcanvas.init_values import PortMode, PortType
+from string_sep import string_sep
 
 from tools import get_code_root
 import xdg
@@ -372,8 +373,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 port_flags = 0
 
             elif line.startswith(':'):
-                params = line[1:].split(':')
-                for param in params:
+                for param, *args in string_sep(line):
                     if param == 'AUDIO':
                         port_type = PortType.AUDIO_JACK
                         port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
@@ -422,7 +422,8 @@ class PatchichiPatchbayManager(PatchbayManager):
                             _log('PORT_ORDER {port_order} is not digits')
                             continue
                         
-                        self.metadata_update(port_uuid, JACK_METADATA_ORDER, port_order)
+                        self.metadata_update(
+                            port_uuid, JACK_METADATA_ORDER, port_order)
                     
                     elif param.startswith('PRETTY_NAME='):
                         if not port_uuid:
