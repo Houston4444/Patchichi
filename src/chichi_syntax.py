@@ -15,7 +15,9 @@ PRE_ATTRIBUTES = (
     'TERMINAL',
     '~TERMINAL',
     'PORTGROUP',
-    '~PORTGROUP'
+    '~PORTGROUP',
+    'SIGNAL_TYPE',
+    '~SIGNAL_TYPE'
 )
 
 POST_ATTRIBUTES = (

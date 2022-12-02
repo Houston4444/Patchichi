@@ -12,7 +12,7 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, Port, PortgroupMem, Group)
+    GroupPos, JackPortFlag, PortgroupMem, Group)
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -23,6 +23,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_ORDER,
     JACK_METADATA_PORT_GROUP,
     JACK_METADATA_PRETTY_NAME,
+    JACK_METADATA_SIGNAL_TYPE,
     later_by_batch)
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
@@ -367,6 +368,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                 group_name = tmp_group_name
                 portgroup = ''
+                signal_type = ''
                 gp_icon_name = ''
                 port_type = PortType.AUDIO_JACK
                 port_mode = PortMode.OUTPUT
@@ -389,8 +391,12 @@ class PatchichiPatchbayManager(PatchbayManager):
                         port_mode = PortMode.INPUT
                     elif param == 'MONITOR':
                         port_flags |= JackPortFlag.CAN_MONITOR
+                    elif param == '~MONITOR':
+                        port_flags &= ~JackPortFlag.CAN_MONITOR
                     elif param == 'TERMINAL':
                         port_flags |= JackPortFlag.IS_TERMINAL
+                    elif param == '~TERMINAL':
+                        port_flags &= ~JackPortFlag.IS_TERMINAL
                     elif param == 'PHYSICAL':
                         port_flags |= JackPortFlag.IS_PHYSICAL
                     elif param == '~PHYSICAL':
@@ -400,6 +406,11 @@ class PatchichiPatchbayManager(PatchbayManager):
                         portgroup = param.partition('=')[2]
                     elif param == '~PORTGROUP':
                         portgroup = ''
+
+                    elif param.startswith('SIGNAL_TYPE='):
+                        signal_type = param.partition('=')[2]
+                    elif param == '~SIGNAL_TYPE':
+                        signal_type = ''
 
                     # after group params
                     elif param == 'GUI_HIDDEN':
@@ -469,6 +480,12 @@ class PatchichiPatchbayManager(PatchbayManager):
                         port_uuid,
                         JACK_METADATA_PORT_GROUP,
                         portgroup)
+                    
+                if signal_type:
+                    self.metadata_update(
+                        port_uuid,
+                        JACK_METADATA_SIGNAL_TYPE,
+                        signal_type)
         
         for group in self.groups:
             visible = group_guis.get(group.name)
