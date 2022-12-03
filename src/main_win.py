@@ -6,14 +6,17 @@ from re import L
 from typing import TYPE_CHECKING, Optional
 from PyQt5.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
-    QVBoxLayout, QFrame)
-from PyQt5.QtCore import Qt, pyqtSlot, QTimer
+    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
+from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
 from editor_help_dialog import EditorHelpDialog
+from patchbay import type_filter_frame
+from patchbay.surclassed_widgets import ZoomSlider
 from patchbay.tools_widgets import PatchbayToolsWidget
 from patchbay.base_elements import ToolDisplayed
 from patchbay.patchcanvas import xdg
+from patchbay.type_filter_frame import TypeFilterFrame
 
 from ui.main_win import Ui_MainWindow
 from xdg import xdg_data_home
@@ -70,11 +73,6 @@ class MainWindow(QMainWindow):
         
         self._normal_screen_maximized = False
         self._normal_screen_had_menu = False
-
-        patchbay_tools_act = self.ui.toolBar.addWidget(PatchbayToolsWidget())
-        self.patchbay_tools = self.ui.toolBar.widgetForAction(patchbay_tools_act)
-        self.ui.toolBar.set_default_displayed_widgets(
-            ToolDisplayed.PORT_TYPES_VIEW| ToolDisplayed.ZOOM_SLIDER)
         
         self.ui.plainTextEditPorts.textChanged.connect(self._text_changed)
         self.ui.plainTextEditPorts.cursor_on_port.connect(
@@ -102,7 +100,6 @@ class MainWindow(QMainWindow):
     def finish_init(self, main: 'Main'):
         self.patchbay_manager = main.patchbay_manager
         self.settings = main.settings
-        self.ui.toolBar.set_patchbay_manager(main.patchbay_manager)
         self.ui.filterFrame.set_patchbay_manager(main.patchbay_manager)
         main.patchbay_manager.sg.filters_bar_toggle_wanted.connect(
             self.toggle_filter_frame_visibility)
@@ -132,12 +129,27 @@ class MainWindow(QMainWindow):
         self.ui.menubar.addMenu(main.patchbay_manager.canvas_menu)
         self.main_menu.insertMenu(
             self.last_separator, main.patchbay_manager.canvas_menu)
-
-        self.ui.toolBar.set_default_displayed_widgets(
-            ToolDisplayed.PORT_TYPES_VIEW
-            | ToolDisplayed.ZOOM_SLIDER)
         
-        # self.ui.splitterMainVsCanvas.setSizes([10, 90])
+        type_filter_frame = TypeFilterFrame(self)
+        type_filter_frame.set_patchbay_manager(main.patchbay_manager)
+        zoom_widget = ZoomSlider(self)
+        zoom_widget.set_patchbay_manager(main.patchbay_manager)
+        
+        sep_widgets = list[QWidget]()
+        for i in range(3):
+            sep_widget = QWidget()
+            layout = QVBoxLayout(sep_widget)
+            layout.addSpacerItem(QSpacerItem(
+                0, 0,
+                QSizePolicy.MinimumExpanding,
+                QSizePolicy.MinimumExpanding))
+            sep_widgets.append(sep_widget)
+
+        self.ui.toolBar.addWidget(sep_widgets[0])
+        self.ui.toolBar.addWidget(type_filter_frame)
+        self.ui.toolBar.addWidget(sep_widgets[1])
+        self.ui.toolBar.addWidget(zoom_widget)
+        self.ui.toolBar.addWidget(sep_widgets[2])
 
     def _menubar_shown_toggled(self, state: int):
         self.ui.menubar.setVisible(bool(state))

@@ -562,13 +562,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         self._setup_canvas()
 
         self.set_canvas_menu(CanvasMenu(self))
-        self.set_tools_widget(main.main_win.patchbay_tools)
         self.set_filter_frame(main.main_win.ui.filterFrame)
         self.set_options_dialog(
             CanvasOptionsDialog(self.main_win, self, self._settings))
-        
-        # prevent 'Jack is not running' red label to be displayed
-        self.server_started()
                 
     def save_file_to(self, path: Path) -> bool:
         _logger.info(f'saving file {str(path)}')

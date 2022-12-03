@@ -149,7 +149,8 @@
               <string>Update the patchbay</string>
              </property>
              <property name="icon">
-              <iconset theme="view-refresh"/>
+              <iconset theme="view-refresh">
+               <normaloff>.</normaloff>.</iconset>
              </property>
             </widget>
            </item>
@@ -182,7 +183,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Logs</string>
+            <string>Errors</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -271,7 +272,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="PatchichiToolBar" name="toolBar">
+  <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -393,11 +394,6 @@
   <customwidget>
    <class>PatchGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>promoted_widgets</header>
-  </customwidget>
-  <customwidget>
-   <class>PatchichiToolBar</class>
-   <extends>QToolBar</extends>
    <header>promoted_widgets</header>
   </customwidget>
   <customwidget>

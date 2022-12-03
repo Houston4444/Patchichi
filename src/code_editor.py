@@ -1,5 +1,4 @@
 
-from dataclasses import dataclass
 from enum import Enum
 from telnetlib import LINEMODE
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QCompleter, QApplication

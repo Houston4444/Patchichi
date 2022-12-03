@@ -7,6 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from patchbay import PatchbayToolsWidget, FilterFrame, PatchGraphicsView
 from patchbay.tool_bar import PatchbayToolBar
+from patchbay.type_filter_frame import TypeFilterFrame
 
 from code_editor import CodeEditor
 
@@ -20,10 +21,6 @@ class PatchFilterFrame(FilterFrame):
 
         
 class PatchichiGraphicsView(PatchGraphicsView):
-    pass
-
-
-class PatchichiToolBar(PatchbayToolBar):
     pass
 
 
