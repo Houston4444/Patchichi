@@ -2,13 +2,12 @@
 from dataclasses import dataclass
 from enum import Enum
 from telnetlib import LINEMODE
-from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget, QCompleter, QApplication
+from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QCompleter, QApplication
 from PyQt5.QtGui import (
-    QPaintEvent, QColor, QPainter, QResizeEvent, QFont, QFocusEvent,
+    QPaintEvent, QColor, QPainter, QResizeEvent, QFocusEvent,
     QKeyEvent,
-    QTextFormat, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QTextDocument)
-from PyQt5.QtCore import Qt, QRect, QSize, QRegularExpression
-from patchbay.patchcanvas.init_values import BoxLayoutMode
+    QTextCursor, QSyntaxHighlighter, QTextCharFormat, QTextDocument)
+from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 
 from chichi_syntax import split_params, PRE_ATTRIBUTES, POST_ATTRIBUTES
 
@@ -41,6 +40,9 @@ LIGHT_SCHEME = {
 # https://doc.qt.io/qt-6/qtwidgets-widgets-codeeditor-example.html
 
 class CodeEditor(QPlainTextEdit):
+    cursor_on_port = pyqtSignal(str)
+    cursor_on_group = pyqtSignal(str)
+    
     def __init__(self, parent):
         super().__init__(parent)
         
@@ -57,7 +59,7 @@ class CodeEditor(QPlainTextEdit):
 
         self.blockCountChanged.connect(self._block_count_changed)
         self.updateRequest.connect(self._update_line_number_area)
-        self.cursorPositionChanged.connect(self._update_completer_mode)
+        self.cursorPositionChanged.connect(self._cursor_moved)
         
         self._update_line_number_area_width()
         
@@ -67,6 +69,8 @@ class CodeEditor(QPlainTextEdit):
         self._port_models = list[str]()
         self._completer = Completer([], self)
         self._set_completer(self._completer_mode)
+        
+        self._prevent_select_loop = False
 
     def line_number_area_paint_event(self, event: QPaintEvent):
         painter = QPainter(self._line_number_area)
@@ -127,7 +131,8 @@ class CodeEditor(QPlainTextEdit):
         if rect.contains(self.viewport().rect()):
             self._update_line_number_area_width()
 
-    def _update_completer_mode(self):
+    def _cursor_moved(self):
+        # change completer depending of line type
         cursor = self.textCursor()
         block = cursor.block()
         
@@ -142,7 +147,75 @@ class CodeEditor(QPlainTextEdit):
             
         if completer_mode != self._completer_mode:
             self._set_completer(completer_mode)
+        
+        if self._prevent_select_loop:
+            return
+        
+        # check if we can ask for a port or group
+        
+        block_n = block.blockNumber()
+        text = block.text()
+        doc = self.document()
+        
+        if text.startswith('::'):
+            self._emit_cursor_on_group(text[2:])
+            return
+        
+        port_name = text
+        
+        if text.startswith(':'):
+            # Cursor is on an attributes line
+            # We check if the params are POST or PRE attributes
+            # to know if the concerned port is higher or lower.
+            search_down = True
+            
+            for param, start, end, is_value in split_params(
+                    text, split_equal=True):
+                if param in POST_ATTRIBUTES:
+                    search_down = False
+                    break
+            
+            if search_down:
+                while block_n + 1 < doc.blockCount():
+                    block_n += 1
+                    block = doc.findBlockByNumber(block_n)
+                    
+                    if block.text().startswith('::'):
+                        # we are on the next group definition
+                        # no cursor_on_port can be emitted
+                        return
+                    if not block.text().startswith(':'):
+                        port_name = block.text()
+                        break
+            else:
+                while block_n > 0:
+                    block_n -= 1
+                    block = doc.findBlockByNumber(block_n)
+                    if block.text().startswith('::'):
+                        self._emit_cursor_on_group(block.text()[2:])
+                        return
+                    if not block.text().startswith(':'):
+                        port_name = block.text()
+                        break
 
+        if not port_name:
+            return
+        
+        # we need the group name to select to good port
+        # So, we now parse the document from current block
+        # to the top, looking for the group definition
+
+        start = block.blockNumber()
+        block_n = start
+        
+        while block_n >= 0:
+            block_n -= 1
+            block = doc.findBlockByNumber(block_n)
+            if block.text().startswith('::'):
+                self._emit_cursor_on_port(
+                    f'{block.text()[2:]}:{port_name}')
+                break
+                
     def _insert_completion(self, completion: str):
         if self._completer.widget() is not self:
             return
@@ -190,13 +263,28 @@ class CodeEditor(QPlainTextEdit):
         tc.select(QTextCursor.WordUnderCursor)
         return tc.selectedText()
 
+    def _emit_cursor_on_port(self, port_name: str):
+        self._prevent_select_loop = True
+        self.cursor_on_port.emit(port_name)
+        self._prevent_select_loop = False
+
+    def _emit_cursor_on_group(self, group_name: str):
+        self._prevent_select_loop = True
+        self.cursor_on_group.emit(group_name)
+        self._prevent_select_loop = False
+
     def move_cursor_to_line(self, line_n: int):
+        if self._prevent_select_loop:
+            return
+        
         docum = self.document()
         block_count = docum.blockCount()
         pre_tc = QTextCursor(docum.findBlockByNumber(block_count -1))
         tc = QTextCursor(docum.findBlockByNumber(line_n))
+        self._prevent_select_loop = True
         self.setTextCursor(pre_tc)
         self.setTextCursor(tc)
+        self._prevent_select_loop = False
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)

@@ -77,17 +77,17 @@ class MainWindow(QMainWindow):
             ToolDisplayed.PORT_TYPES_VIEW| ToolDisplayed.ZOOM_SLIDER)
         
         self.ui.plainTextEditPorts.textChanged.connect(self._text_changed)
+        self.ui.plainTextEditPorts.cursor_on_port.connect(
+            self._select_port_in_patchbay)
+        self.ui.plainTextEditPorts.cursor_on_group.connect(
+            self._select_group_in_patchbay)
         
         self.ui.checkBoxAutoUpdate.stateChanged.connect(
             self._auto_update_changed)
         self.ui.pushButtonUpdatePatchbay.clicked.connect(
             self.refresh_patchbay)
         self.ui.pushButtonUpdatePatchbay.setVisible(False)
-        self._editor_update_timer = QTimer()
-        self._editor_update_timer.setInterval(100)
-        self._editor_update_timer.setSingleShot(True)
-        # self._editor_update_timer.timeout.connect(
-        #     self.update_patchbay_from_editor_text)
+
         splitter_handle = self.ui.splitterPortsVsLogs.handle(1)
         layout = QVBoxLayout(splitter_handle)
         self._splitter_line = QFrame(splitter_handle)
@@ -164,6 +164,19 @@ class MainWindow(QMainWindow):
     
     def get_editor_text(self) -> str:
         return self.ui.plainTextEditPorts.toPlainText()
+    
+    def _select_port_in_patchbay(self, full_port_name: str):
+        if self.patchbay_manager is None:
+            return
+        
+        self.patchbay_manager.select_port(full_port_name)
+    
+    def _select_group_in_patchbay(self, group_name: str):
+        if self.patchbay_manager is None:
+            return
+        
+        self.patchbay_manager.select_group(group_name)
+        
     
     def refresh_patchbay(self):
         if self.patchbay_manager is None:

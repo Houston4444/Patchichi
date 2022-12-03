@@ -110,7 +110,6 @@ class PatchichiCallbacker(Callbacker):
         for i in range(len(text_lines)):
             line = text_lines[i]
             if line == '::' + group.name:
-                print(line, i + 1)
                 self.mng.main_win.ui.plainTextEditPorts.move_cursor_to_line(i)
                 break
         else:
@@ -543,6 +542,20 @@ class PatchichiPatchbayManager(PatchbayManager):
             group.client_icon = icon_name
             if '.' in group.name:
                 group.display_name = group.name.partition('.')[2]
+
+    def select_port(self, full_port_name: str):
+        port = self.get_port_from_name(full_port_name)
+        if port is None:
+            return
+
+        port.select_in_canvas()
+
+    def select_group(self, group_name: str):
+        group = self.get_group_from_name(group_name)
+        if group is None:
+            return
+        
+        group.select_filtered_box(n_select=1)
 
     def finish_init(self, main: 'Main'):
         self.set_main_win(main.main_win)
