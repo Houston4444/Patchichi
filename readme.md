@@ -3,6 +3,8 @@
 Patchichi is an abstract JACK patchbay GUI for GNU/Linux systems, but it could be adapted to Mac and Windows with little effort.
 The software it most closely resembles is probably [Catarina](https://kx.studio/Applications:Catarina), from the Cadence suite.
 
+![Screenshot](https://raw.githubusercontent.com/Houston4444/Patchichi/master/screenshots/basic_example.png)
+
 It is based on the [HoustonPatchbay](https://github.com/Houston4444/HoustonPatchbay) submodule which provides portgroups, wrappable boxes, editable themes and many other nice features.
 
 The idea here is to have an editable patchbay, totally abstract and not related to the JACK (or PipeWire) audio server.
