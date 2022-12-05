@@ -20,6 +20,5 @@ class EditorHelpDialog(QDialog):
         except Exception as e:
             _logger(str(e))
             return
-        
+
         self.ui.webEngineView.setHtml(contents)
-        
