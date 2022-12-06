@@ -12,11 +12,7 @@ from about_dialog import AboutDialog
 from xdg import xdg_data_home
 from manual_tools import get_manual_path, open_in_browser
 
-from patchbay import type_filter_frame
 from patchbay.surclassed_widgets import ZoomSlider
-from patchbay.tools_widgets import PatchbayToolsWidget
-from patchbay.base_elements import ToolDisplayed
-from patchbay.patchcanvas import xdg
 from patchbay.type_filter_frame import TypeFilterFrame
 
 from ui.main_win import Ui_MainWindow
@@ -99,6 +95,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._splitter_line)
         
         self.ui.graphicsView.setFocus()
+        
+        # prevent toolbar hideability
+        self.ui.toolBar.toggleViewAction().setEnabled(False)
+        self.ui.toolBar.toggleViewAction().setVisible(False)
         
         self._current_path: Optional[Path] = None
         
