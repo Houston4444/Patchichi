@@ -22,7 +22,7 @@ PRE_ATTRIBUTES = (
 
 POST_ATTRIBUTES = (
     'PRETTY_NAME',
-    'PORT_ORDER',
+    'ORDER',
     'GUI_VISIBLE',
     'GUI_HIDDEN',
     'ICON_NAME',

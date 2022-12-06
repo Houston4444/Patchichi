@@ -219,7 +219,7 @@ class CodeEditor(QPlainTextEdit):
         if self._completer.widget() is not self:
             return
         
-        if completion in ('PORTGROUP', 'PRETTY_NAME', 'PORT_ORDER',
+        if completion in ('PORTGROUP', 'PRETTY_NAME', 'ORDER',
                           'ICON_NAME', 'CLIENT_ICON'):
             completion += '='
         

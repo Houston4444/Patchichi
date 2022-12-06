@@ -128,14 +128,14 @@ Les post-propriétés disponible après la définition d'un port sont :
 
 ```
 PRETTY_NAME
-PORT_ORDER
+ORDER
 ```
 
 *PRETTY_NAME* fonctionne comme si la métadonnée JACK *pretty_name* était définie sur le port.
 
-*PORT_ORDER* fonctionne comme si la métadonnée JACK *order* était définie sur le port.
+*ORDER* fonctionne comme si la métadonnée JACK *order* était définie sur le port.
 
-*PRETTY_NAME* et *PORT_ORDER* sont des <<value_properties>>.
+*PRETTY_NAME* et *ORDER* sont des <<value_properties>>.
 
 [#value_properties]
 === propriétés-valeur

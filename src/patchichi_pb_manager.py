@@ -446,14 +446,14 @@ class PatchichiPatchbayManager(PatchbayManager):
                         gp_icon_name = param.partition('=')[2]
 
                     # after port params
-                    elif param.startswith('PORT_ORDER='):
+                    elif param.startswith('ORDER='):
                         if not port_uuid:
-                            _log('PORT_ORDER affected to no port')
+                            _log('ORDER affected to no port')
                             continue
                         
                         port_order = param.partition('=')[2]
                         if not port_order.isdigit():
-                            _log('PORT_ORDER {port_order} is not digits')
+                            _log(f'ORDER "{port_order}" is not digits')
                             continue
                         
                         self.metadata_update(
