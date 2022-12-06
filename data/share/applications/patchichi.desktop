@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Patchichi
 GenericName=Patchichi
-Comment=Jack Patchbay
-Comment[fr]=Baie de brassage pour JACK
+Comment=Jack Patchbay abstract editor
+Comment[fr]=Éditeur de baie de brassage abstraite pour JACK
 Exec=patchichi
 Icon=patchichi
 Terminal=false
