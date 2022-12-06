@@ -33,3 +33,8 @@ The required build dependencies are: <i>(devel packages of these)</i>
 
 On Debian and Ubuntu, use these commands to install all build dependencies: <br/>
 `$ sudo apt-get install python3-pyqt5 pyqt5-dev-tools qtchooser qttools5-dev-tools`
+
+===== RUNTIME DEPENDENCIES =====
+--------------------------------
+
+If the python3-pyqt-qtwebengine is present, the editor help will be displayed in a dialog window, else it will start a web browser.
