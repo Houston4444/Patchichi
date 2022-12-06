@@ -1,16 +1,17 @@
 
-from dis import dis
-import os
+
+import subprocess
 from pathlib import Path
-from re import L
 from typing import TYPE_CHECKING, Optional
 from PyQt5.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
-    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
+    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget, QMessageBox)
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
-from editor_help_dialog import EditorHelpDialog
+from xdg import xdg_data_home
+from manual_tools import get_manual_path, open_in_browser
+
 from patchbay import type_filter_frame
 from patchbay.surclassed_widgets import ZoomSlider
 from patchbay.tools_widgets import PatchbayToolsWidget
@@ -19,8 +20,12 @@ from patchbay.patchcanvas import xdg
 from patchbay.type_filter_frame import TypeFilterFrame
 
 from ui.main_win import Ui_MainWindow
-from xdg import xdg_data_home
 
+try:
+    from editor_help_dialog import EditorHelpDialog
+    HAS_WEB_ENGINE = True
+except ImportError:
+    HAS_WEB_ENGINE = False
 
 if TYPE_CHECKING:
     from patchichi import Main
@@ -276,9 +281,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _show_editor_help(self):
-        dialog = EditorHelpDialog(self)
-        dialog.show()
+        if HAS_WEB_ENGINE:
+            dialog = EditorHelpDialog(self)
+            dialog.show()
+            return
         
+        open_in_browser(self, get_manual_path())
 
     def closeEvent(self, event):
         self.settings.setValue('MainWindow/geometry', self.saveGeometry())

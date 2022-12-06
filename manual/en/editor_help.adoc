@@ -7,7 +7,8 @@ Connections and box positions are not managed here.
 
 == Syntax introduction
 
-The syntax is based on lines.
+The syntax is based on lines. +
+The idea is to make the ports creation as fast as possible.
 
 === Add a group
 
@@ -21,7 +22,7 @@ the group will appears in the patchbay once you have added one port.
 
 === Define a property
 
-To define a property, starts a line with 1 colon, and separate properties with 1 colon, this way:
+To define a property, start a line with 1 colon, and separate properties with 1 colon, this way:
 
 ```
 :AUDIO:OUTPUT
@@ -38,8 +39,12 @@ output_L
 == Properties
 
 There are 2 types of properties, pre-properties and post-properties.
-Pre-properties define port properties for all following ports, until another property redefine this property.
+
+Pre-properties define port properties for all following ports, until another property redefine this property, or another group is defined.
+
 Post-properties only affect the previous port.
+
+The editor syntax coloration should help you to distinguish post-properties from pre-properties.
 
 === Pre-Properties
 
@@ -62,42 +67,70 @@ TERMINAL
 
 PORTGROUP
 ~PORTGROUP
+SIGNAL_TYPE
+~SIGNAL_TYPE
 ```
 
-* OUTPUT
-* INPUT
-* AUDIO
-* MIDI
-* CV
-* PHYSICAL
-* MONITOR
-* TERMINAL
-* ~PHYSICAL
-* ~MONITOR
-* ~TERMINAL
-* PORTGROUP
-* ~PORTGROUP
+By default, at each group creation, all ports will be audio outputs. However, it's better to define *:AUDIO:OUPUT* for the first ports for readability.
 
 pre-properties starting with ~ can be used to not affect the property to the following ports anymore.
 
-PORTGROUP is a value-property, see <<value_properties>>.
+==== Port Mode
+
+*OUTPUT* and *INPUT* are port mode properties. All ports below *OUTPUT* will be output ports, until *INPUT* property is defined.
+
+==== Port Type
+
+*AUDIO*, *MIDI* and *CV* are port type properties. All ports below *AUDIO* will be audio ports, until *MIDI* or *CV* property is defined.
+
+==== Port Flags
+
+*PHYSICAL*, *MONITOR* and *TERMINAL* are port flags properties. A port can have the 3 flags together, so, define *MONITOR* or *TERMINAL* flag doesn't remove the *PHYSICAL* flag.
+To unset *MONITOR* flag, set the *~MONITOR* property.
+
+==== Metadatas
+
+*PORTGROUP* and *SIGNAL_TYPE* behaves as if JACK metadatas are set on ports.
+
+You can also define portgroups with the patchbay, with right click on a port and *set as stereo with*. This is not exactly the same thing. Portgroups saved with HoustonPatchbay will erase portgroups created by metadatas if jack ports contains the portgroup metadata at portgroup creation.
+
+For the moment, the only *SIGNAL_TYPE* value which impacts the patchbay is *CV*, and it only works on audio ports. It exists because define SIGNAL_TYPE=CV by JACK metadatas is another way to define a CV port.
+
+*PORTGROUP* and *SIGNAL_TYPE* are <<value_properties>>.
 
 === Post-properties
 
+==== Group post properties
 post-properties available after group definition are:
 
-* PRETTY_NAME
-* GUI_VISIBLE
-* GUI_HIDDEN
-* ICON_NAME
-* CLIENT_ICON
+```
+PRETTY_NAME
+GUI_VISIBLE
+GUI_HIDDEN
+ICON_NAME
+CLIENT_ICON
+```
 
-PRETTY_NAME, ICON_NAME and CLIENT_ICON are <<value_properties>>.
+*PRETTY_NAME* works as if the *pretty_name* JACK metadata is set on the client. It is not used yet by the patchbay, but could be in the future.
+
+*GUI_VISIBLE* and *GUI_HIDDEN* works as if the group is supposed to be an NSM client with ':optional-gui' capability.
+
+*CLIENT_ICON* works as if RaySession define the group icon with the NSM/RAY_HACK client icon.
+
+*ICON_NAME* works as if the *icon_name* JACK metadata is set on the client. In the patchbay, it has priority on *CLIENT_ICON*.
+
+*PRETTY_NAME*, *ICON_NAME* and *CLIENT_ICON* are <<value_properties>>.
+
+==== Port post properties
 
 post-properties available after port definition are:
 
-* PRETTY_NAME
-* PORT_ORDER
+```
+PRETTY_NAME
+PORT_ORDER
+```
+*PRETTY_NAME* works as if the *pretty_name* JACK metadata is set on the port.
+*PORT_ORDER* works as if the *order* JACK metadata is set on the port.
 
 PRETTY_NAME and PORT_ORDER are <<value_properties>>.
 

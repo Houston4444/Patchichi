@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.12">
-<title>Help for Patchichi editor</title>
+<title>Aide pour l&#8217;éditeur de Patchichi</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -440,43 +440,43 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Help for Patchichi editor</h1>
+<h1>Aide pour l&#8217;éditeur de Patchichi</h1>
 </div>
 <div id="content">
 <div class="sect1">
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Add group and ports to the editor to see them in the patchbay.
-Connections and box positions are not managed here.</p>
+<p>Ajoutez des groupes et des ports à l&#8217;éditeur pour les voir dans la baie de brassage.<br>
+Les connexions et les positions des boîtes ne sont pas gérées ici.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_syntax_introduction">Syntax introduction</h2>
+<h2 id="_introduction_à_la_syntaxe">introduction à la syntaxe</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The syntax is based on lines.<br>
-The idea is to make the ports creation as fast as possible.</p>
+<p>La syntaxe est basée sur les lignes.<br>
+L&#8217;idée est de rendre la création de ports aussi rapide que possible.</p>
 </div>
 <div class="sect2">
-<h3 id="_add_a_group">Add a group</h3>
+<h3 id="_ajouter_un_groupe">Ajouter un groupe</h3>
 <div class="paragraph">
-<p>To add a group, start a line with 2 colons and type the group name, this way:</p>
+<p>Pour ajouter un groupe, commencez une ligne par deux fois deux points ("::"), comme ceci :</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>::Group Name</code></pre>
+<pre class="highlight"><code>::Nom du groupe</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>the group will appears in the patchbay once you have added one port.</p>
+<p>Le groupe apparaîtra dans la baie de brassage une fois que vous aurez ajouté un port.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_define_a_property">Define a property</h3>
+<h3 id="_definir_une_propriété">Definir une propriété</h3>
 <div class="paragraph">
-<p>To define a property, start a line with 1 colon, and separate properties with 1 colon, this way:</p>
+<p>Pour définir une propriété, commencez une ligne par ':', et séparez les propriétés par ':', comme ceci :</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -485,9 +485,9 @@ The idea is to make the ports creation as fast as possible.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_add_a_port">Add a port</h3>
+<h3 id="_ajouter_un_port">Ajouter un port</h3>
 <div class="paragraph">
-<p>To add a port, simply type its name, for example</p>
+<p>Pour ajouter un port, tapez simplement son nom, par exemple</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -498,24 +498,24 @@ The idea is to make the ports creation as fast as possible.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_properties">Properties</h2>
+<h2 id="_propriétés">Propriétés</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are 2 types of properties, pre-properties and post-properties.</p>
+<p>Il existe 2 types de propriétés, les pré-propriétés et les post-propriétés.</p>
 </div>
 <div class="paragraph">
-<p>Pre-properties define port properties for all following ports, until another property redefine this property, or another group is defined.</p>
+<p>Les pré-propriétés definissent les propriétés de port pour tous les ports suivants, jusqu&#8217;à ce qu&#8217;une autre propriété redefinisse cette propriété, ou qu&#8217;un autre groupe soit défini.</p>
 </div>
 <div class="paragraph">
-<p>Post-properties only affect the previous port.</p>
+<p>Les post-propriétés ne s&#8217;appliquent que sur le port précédent.</p>
 </div>
 <div class="paragraph">
-<p>The editor syntax coloration should help you to distinguish post-properties from pre-properties.</p>
+<p>La coloration syntaxique de l&#8217;éditeur devrait vous aider à distinguer les post-propriétés des pré-propriétés.</p>
 </div>
 <div class="sect2">
-<h3 id="_pre_properties">Pre-Properties</h3>
+<h3 id="_pré_propriétés">Pré-propriétés</h3>
 <div class="paragraph">
-<p>Available pre-properties are:</p>
+<p>Les pré-propriétés disponibles sont :</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -540,52 +540,52 @@ SIGNAL_TYPE
 </div>
 </div>
 <div class="paragraph">
-<p>By default, at each group creation, all ports will be audio outputs. However, it&#8217;s better to define <strong>:AUDIO:OUPUT</strong> for the first ports for readability.</p>
+<p>Par défaut, à chaque création de groupe, tous les ports sont des ports audio de sortie. Cependant, il est préférable de définir <strong>:AUDIO:OUTPUT</strong> pour les premiers ports pour une meilleure lisibilité.</p>
 </div>
 <div class="paragraph">
-<p>pre-properties starting with ~ can be used to not affect the property to the following ports anymore.</p>
+<p>Les pré-propriétés commençant par ~ peuvent être utilisées pour ne plus affecter la propriété aux ports suivants.</p>
 </div>
 <div class="sect3">
-<h4 id="_port_mode">Port Mode</h4>
+<h4 id="_mode_de_port">Mode de port</h4>
 <div class="paragraph">
-<p><strong>OUTPUT</strong> and <strong>INPUT</strong> are port mode properties. All ports below <strong>OUTPUT</strong> will be output ports, until <strong>INPUT</strong> property is defined.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_port_type">Port Type</h4>
-<div class="paragraph">
-<p><strong>AUDIO</strong>, <strong>MIDI</strong> and <strong>CV</strong> are port type properties. All ports below <strong>AUDIO</strong> will be audio ports, until <strong>MIDI</strong> or <strong>CV</strong> property is defined.</p>
+<p><strong>OUTPUT</strong> et <strong>INPUT</strong> sont des propriétés de mode de port. tous les ports en dessous de <strong>OUTPUT</strong> seront des ports de sortie, jusqu&#8217;à ce que la propriété <strong>INPUT</strong> soit définie.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_port_flags">Port Flags</h4>
+<h4 id="_type_de_port">Type de port</h4>
 <div class="paragraph">
-<p><strong>PHYSICAL</strong>, <strong>MONITOR</strong> and <strong>TERMINAL</strong> are port flags properties. A port can have the 3 flags together, so, define <strong>MONITOR</strong> or <strong>TERMINAL</strong> flag doesn&#8217;t remove the <strong>PHYSICAL</strong> flag.
-To unset <strong>MONITOR</strong> flag, set the <strong>~MONITOR</strong> property.</p>
+<p><strong>AUDIO</strong>, <strong>MIDI</strong> et <strong>CV</strong> sont des propriétés de type de port. Tous les ports en dessous de <strong>AUDIO</strong> seront des ports audio, jusqu&#8217;à ce que la propriété <strong>MIDI</strong> ou <strong>CV</strong> soit définie.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_metadatas">Metadatas</h4>
+<h4 id="_drapeaux_de_port">Drapeaux de port</h4>
 <div class="paragraph">
-<p><strong>PORTGROUP</strong> and <strong>SIGNAL_TYPE</strong> behaves as if JACK metadatas are set on ports.</p>
+<p><strong>PHYSICAL</strong>, <strong>MONITOR</strong> et <strong>TERMINAL</strong> sont des propriétés drapeau. Un port peut avoir les trois drapeaux ensemble, donc, definir <strong>MONITOR</strong> ou <strong>TERMINAL</strong> n&#8217;enlève pas la propriété <strong>PHYSICAL</strong>.
+Pour retirer la propriété <strong>MONITOR</strong>, définisser la propriété <strong>~MONITOR</strong>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_metadonnées">Metadonnées</h4>
+<div class="paragraph">
+<p><strong>PORTGROUP</strong> et <strong>SIGNAL_TYPE</strong>  se comportent comme ci les métadonnées JACK correspondantes étaient définies sur les ports.</p>
 </div>
 <div class="paragraph">
-<p>You can also define portgroups with the patchbay, with right click on a port and <strong>set as stereo with</strong>. This is not exactly the same thing. Portgroups saved with HoustonPatchbay will erase portgroups created by metadatas if jack ports contains the portgroup metadata at portgroup creation.</p>
+<p>Vous pouvez aussi définir des portgroups avec la baie de brassage, en faisant un clic droit sur un port et <strong>Mettre en stéréo avec</strong>. Ce n&#8217;est pas exactement la même chose. Les portgroups sauvegardés avec HoustonPatchbay écraseront les portgroups définis par les métadonnées si les ports JACK contiennent la métadonnée portgroup à la création du portgroup.</p>
 </div>
 <div class="paragraph">
-<p>For the moment, the only <strong>SIGNAL_TYPE</strong> value which impacts the patchbay is <strong>CV</strong>, and it only works on audio ports. It exists because define SIGNAL_TYPE=CV by JACK metadatas is another way to define a CV port.</p>
+<p>Pour le moment, la seule valeur pour <strong>SIGNAL_TYPE</strong> qui impacte la baie de brassage est <strong>CV</strong>, et ça ne fonctionne que sur les ports audio. Celà existe parce définir SIGNAL_TYPE=CV par les métadonnées de JACK est une autre façon de définir un port CV.</p>
 </div>
 <div class="paragraph">
-<p><strong>PORTGROUP</strong> and <strong>SIGNAL_TYPE</strong> are <a href="#value_properties">value-properties</a>.</p>
+<p><strong>PORTGROUP</strong> et <strong>SIGNAL_TYPE</strong> sont des <a href="#value_properties">propriétés-valeur</a>.</p>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_post_properties">Post-properties</h3>
+<h3 id="_post_propriétés">Post-propriétés</h3>
 <div class="sect3">
-<h4 id="_group_post_properties">Group post properties</h4>
+<h4 id="_post_propriétés_de_groupe">Post-propriétés de groupe</h4>
 <div class="paragraph">
-<p>post-properties available after group definition are:</p>
+<p>Les post-propriétés de groupe disponibles après la définition d&#8217;un groupe sont :</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -597,25 +597,25 @@ CLIENT_ICON</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>PRETTY_NAME</strong> works as if the <strong>pretty_name</strong> JACK metadata is set on the client. It is not used yet by the patchbay, but could be in the future.</p>
+<p><strong>PRETTY_NAME</strong> fonctionne comme si la métadonnée JACK <strong>pretty_name</strong> JACK metadata était définie sur le client. Ce n&#8217;est pas encore utilisé dans la baie de brassage.</p>
 </div>
 <div class="paragraph">
-<p><strong>GUI_VISIBLE</strong> and <strong>GUI_HIDDEN</strong> works as if the group is supposed to be an NSM client with ':optional-gui' capability.</p>
+<p><strong>GUI_VISIBLE</strong> et <strong>GUI_HIDDEN</strong> fonctionnent comme si le groupe était supposé appartenir à un client NSM avec la capacité ':optional-gui:'.</p>
 </div>
 <div class="paragraph">
-<p><strong>CLIENT_ICON</strong> works as if RaySession define the group icon with the NSM/RAY_HACK client icon.</p>
+<p><strong>CLIENT_ICON</strong> fonctionne comme lorsque RaySession definit l&#8217;îcone du groupe avec l&#8217;îcone du client NSM/RAY_HACK.</p>
 </div>
 <div class="paragraph">
-<p><strong>ICON_NAME</strong> works as if the <strong>icon_name</strong> JACK metadata is set on the client. In the patchbay, it has priority on <strong>CLIENT_ICON</strong>.</p>
+<p><strong>ICON_NAME</strong> fonctionne comme si la métadonnée JACK <strong>icon_name</strong> était définie sur le client JACK. Dans la baie de brassage, c&#8217;est prioritaire sur <strong>CLIENT_ICON</strong>.</p>
 </div>
 <div class="paragraph">
-<p><strong>PRETTY_NAME</strong>, <strong>ICON_NAME</strong> and <strong>CLIENT_ICON</strong> are <a href="#value_properties">value-properties</a>.</p>
+<p><strong>PRETTY_NAME</strong>, <strong>ICON_NAME</strong> et <strong>CLIENT_ICON</strong> sont des <a href="#value_properties">propriétés-valeur</a>.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_port_post_properties">Port post properties</h4>
+<h4 id="_post_propriétés_de_port">Post-propriétés de port</h4>
 <div class="paragraph">
-<p>post-properties available after port definition are:</p>
+<p>Les post-propriétés disponible après la définition d&#8217;un port sont :</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -624,30 +624,32 @@ PORT_ORDER</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>PRETTY_NAME</strong> works as if the <strong>pretty_name</strong> JACK metadata is set on the port.
-<strong>PORT_ORDER</strong> works as if the <strong>order</strong> JACK metadata is set on the port.</p>
+<p><strong>PRETTY_NAME</strong> fonctionne comme si la métadonnée JACK <strong>pretty_name</strong> était définie sur le port.</p>
 </div>
 <div class="paragraph">
-<p>PRETTY_NAME and PORT_ORDER are <a href="#value_properties">value-properties</a>.</p>
+<p><strong>PORT_ORDER</strong> fonctionne comme si la métadonnée JACK <strong>order</strong> était définie sur le port.</p>
+</div>
+<div class="paragraph">
+<p><strong>PRETTY_NAME</strong> et <strong>PORT_ORDER</strong> sont des <a href="#value_properties">propriétés-valeur</a>.</p>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="value_properties">value-properties</h3>
+<h3 id="value_properties">propriétés-valeur</h3>
 <div class="paragraph">
-<p>value-properties have to be defined with the following syntax:</p>
+<p>Les propriétés-valeur doivent être définies avec la syntaxe suivante :</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>PROPERTY=my value</code></pre>
+<pre class="highlight"><code>PROPRIÉTÉ=ma valeur</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>if the value contains colons, you have to preceed this colons with antislash, this way</p>
+<p>Si la valeur contient des ':', vous devez préceder ces ':' par un antislash, comme ceci</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>PROPERTY=something\:something else</code></pre>
+<pre class="highlight"><code>PROPRIÉTÉ=quelque chose\:autre chose</code></pre>
 </div>
 </div>
 </div>
@@ -656,7 +658,7 @@ PORT_ORDER</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-12-06 12:00:45 +0100
+Last updated 2022-12-06 12:14:46 +0100
 </div>
 </div>
 </body>

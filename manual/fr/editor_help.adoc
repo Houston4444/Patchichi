@@ -1,0 +1,153 @@
+= Aide pour l'éditeur de Patchichi
+
+== Introduction
+
+Ajoutez des groupes et des ports à l'éditeur pour les voir dans la baie de brassage. +
+Les connexions et les positions des boîtes ne sont pas gérées ici.
+
+== introduction à la syntaxe
+
+La syntaxe est basée sur les lignes. +
+L'idée est de rendre la création de ports aussi rapide que possible.
+
+=== Ajouter un groupe
+
+Pour ajouter un groupe, commencez une ligne par deux fois deux points ("::"), comme ceci :
+
+```
+::Nom du groupe
+```
+
+Le groupe apparaîtra dans la baie de brassage une fois que vous aurez ajouté un port.
+
+=== Definir une propriété
+
+Pour définir une propriété, commencez une ligne par ':', et séparez les propriétés par ':', comme ceci : 
+
+```
+:AUDIO:OUTPUT
+```
+
+=== Ajouter un port
+
+Pour ajouter un port, tapez simplement son nom, par exemple
+
+```
+output_L
+```
+
+== Propriétés
+
+Il existe 2 types de propriétés, les pré-propriétés et les post-propriétés.
+
+Les pré-propriétés definissent les propriétés de port pour tous les ports suivants, jusqu'à ce qu'une autre propriété redefinisse cette propriété, ou qu'un autre groupe soit défini.
+
+Les post-propriétés ne s'appliquent que sur le port précédent.
+
+La coloration syntaxique de l'éditeur devrait vous aider à distinguer les post-propriétés des pré-propriétés.
+
+=== Pré-propriétés
+
+Les pré-propriétés disponibles sont :
+
+```
+OUTPUT
+INPUT
+
+AUDIO
+MIDI
+CV
+
+PHYSICAL
+MONITOR
+TERMINAL
+~PHYSICAL
+~MONITOR
+~TERMINAL
+
+PORTGROUP
+~PORTGROUP
+SIGNAL_TYPE
+~SIGNAL_TYPE
+```
+
+Par défaut, à chaque création de groupe, tous les ports sont des ports audio de sortie. Cependant, il est préférable de définir *:AUDIO:OUTPUT* pour les premiers ports pour une meilleure lisibilité.
+
+Les pré-propriétés commençant par ~ peuvent être utilisées pour ne plus affecter la propriété aux ports suivants.
+
+==== Mode de port
+
+*OUTPUT* et *INPUT* sont des propriétés de mode de port. tous les ports en dessous de *OUTPUT* seront des ports de sortie, jusqu'à ce que la propriété *INPUT* soit définie.
+
+==== Type de port
+
+*AUDIO*, *MIDI* et *CV* sont des propriétés de type de port. Tous les ports en dessous de *AUDIO* seront des ports audio, jusqu'à ce que la propriété *MIDI* ou *CV* soit définie.
+
+==== Drapeaux de port
+
+*PHYSICAL*, *MONITOR* et *TERMINAL* sont des propriétés drapeau. Un port peut avoir les trois drapeaux ensemble, donc, definir *MONITOR* ou *TERMINAL* n'enlève pas la propriété *PHYSICAL*.
+Pour retirer la propriété *MONITOR*, définisser la propriété *~MONITOR*.
+
+==== Metadonnées
+
+*PORTGROUP* et *SIGNAL_TYPE*  se comportent comme ci les métadonnées JACK correspondantes étaient définies sur les ports.
+
+Vous pouvez aussi définir des portgroups avec la baie de brassage, en faisant un clic droit sur un port et *Mettre en stéréo avec*. Ce n'est pas exactement la même chose. Les portgroups sauvegardés avec HoustonPatchbay écraseront les portgroups définis par les métadonnées si les ports JACK contiennent la métadonnée portgroup à la création du portgroup.
+
+Pour le moment, la seule valeur pour *SIGNAL_TYPE* qui impacte la baie de brassage est *CV*, et ça ne fonctionne que sur les ports audio. Celà existe parce définir SIGNAL_TYPE=CV par les métadonnées de JACK est une autre façon de définir un port CV.
+
+*PORTGROUP* et *SIGNAL_TYPE* sont des <<value_properties>>.
+
+=== Post-propriétés
+
+==== Post-propriétés de groupe
+Les post-propriétés de groupe disponibles après la définition d'un groupe sont :
+
+```
+PRETTY_NAME
+GUI_VISIBLE
+GUI_HIDDEN
+ICON_NAME
+CLIENT_ICON
+```
+
+*PRETTY_NAME* fonctionne comme si la métadonnée JACK *pretty_name* JACK metadata était définie sur le client. Ce n'est pas encore utilisé dans la baie de brassage.
+
+
+*GUI_VISIBLE* et *GUI_HIDDEN* fonctionnent comme si le groupe était supposé appartenir à un client NSM avec la capacité ':optional-gui:'.
+
+*CLIENT_ICON* fonctionne comme lorsque RaySession definit l'îcone du groupe avec l'îcone du client NSM/RAY_HACK.
+
+*ICON_NAME* fonctionne comme si la métadonnée JACK *icon_name* était définie sur le client JACK. Dans la baie de brassage, c'est prioritaire sur *CLIENT_ICON*. 
+
+*PRETTY_NAME*, *ICON_NAME* et *CLIENT_ICON* sont des <<value_properties>>.
+
+==== Post-propriétés de port
+
+Les post-propriétés disponible après la définition d'un port sont :
+
+```
+PRETTY_NAME
+PORT_ORDER
+```
+
+*PRETTY_NAME* fonctionne comme si la métadonnée JACK *pretty_name* était définie sur le port.
+
+*PORT_ORDER* fonctionne comme si la métadonnée JACK *order* était définie sur le port.
+
+*PRETTY_NAME* et *PORT_ORDER* sont des <<value_properties>>.
+
+[#value_properties]
+=== propriétés-valeur
+
+Les propriétés-valeur doivent être définies avec la syntaxe suivante :
+
+```
+PROPRIÉTÉ=ma valeur
+```
+
+Si la valeur contient des ':', vous devez préceder ces ':' par un antislash, comme ceci
+
+```
+PROPRIÉTÉ=quelque chose\:autre chose
+```
