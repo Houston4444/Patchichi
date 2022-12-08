@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 
 APP_TITLE = 'Patchichi'
-VERSION = (0, 1, 0)
+VERSION = (0, 2, 0)
 
 import sys
 
@@ -13,13 +13,12 @@ for arg in sys.argv[1:]:
         sys.stdout.write('.'.join([str(i) for i in VERSION]) + '\n')
         sys.exit(0)
     if arg == '--help':
-        info = (
+        sys.stdout.write(
             "Abstract JACK patchbay application\n"
             "Usage: patchichi [--help] [--version]\n"
             "  --help     show this help\n"
             "  --version  print program version\n"
         )
-        sys.stdout.write(info)
         sys.exit(0)
 
 
