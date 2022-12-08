@@ -132,8 +132,9 @@ install:
 	install -m 644 resources/main_icon/scalable/patchichi.svg \
 		$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/
 
-	# Copy patchbay themes
+#	# Copy patchbay themes
 	cp -r HoustonPatchbay/themes $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
+	cp -r HoustonPatchbay/manual $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 
 # 	# Install main code
 	cp -r src $(DEST_PATCHICHI)/

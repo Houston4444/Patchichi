@@ -113,7 +113,7 @@ def main_loop():
 
     # auto load patch as it was at last exit
     # It doesn't loads a saved scene
-    # 'Save file' action will ask 
+    # 'Save file' action will ask the destination path
     last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
     if last_patch.is_file():
         pb_manager.load_file(last_patch)

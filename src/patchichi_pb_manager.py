@@ -151,6 +151,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         SUBMODULE = 'HoustonPatchbay'
         THEME_PATH = Path(SUBMODULE) / 'themes'
         source_theme_path = Path(get_code_root()) / THEME_PATH
+        manual_path = Path(get_code_root()) / SUBMODULE / 'manual'
         theme_paths = list[Path]()
         
         app_title = QApplication.applicationName().lower()
@@ -167,6 +168,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.app_init(self.main_win.ui.graphicsView,
                       theme_paths,
+                      manual_path=manual_path,
                       callbacker=PatchichiCallbacker(self),
                       default_theme_name='Yellow Boards')
 
