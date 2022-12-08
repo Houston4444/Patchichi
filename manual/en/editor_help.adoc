@@ -1,4 +1,5 @@
 = Help for Patchichi editor
+:stylesheet: theme.css
 
 == Introduction
 
