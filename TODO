@@ -9,3 +9,11 @@ update editor by group ? -> later
 events
 
 patchbay:
+    auto-arrange:
+        Monitor en haut (compliqué)
+        Arr tout splitté emballé
+        Option colonnes de signal continu
+        Garder les hardware dans l'ordre
+        Sauvegarde des positions
+
+
