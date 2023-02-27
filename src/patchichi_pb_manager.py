@@ -410,6 +410,12 @@ class PatchichiPatchbayManager(PatchbayManager):
                     elif param == 'CV':
                         port_type = PortType.AUDIO_JACK
                         port_flags |= JackPortFlag.IS_CONTROL_VOLTAGE
+                    elif param == 'ALSA':
+                        port_type = PortType.MIDI_ALSA
+                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                    elif param == 'VIDEO':
+                        port_type = PortType.VIDEO
+                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
                     elif param == 'OUTPUT':
                         port_mode = PortMode.OUTPUT
                     elif param == 'INPUT':

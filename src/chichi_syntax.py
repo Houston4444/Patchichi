@@ -8,6 +8,8 @@ PRE_ATTRIBUTES = (
     'AUDIO',
     'MIDI',
     'CV',
+    'ALSA',
+    'VIDEO',
     'PHYSICAL',
     '~PHYSICAL',
     'MONITOR',
