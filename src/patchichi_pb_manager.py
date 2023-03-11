@@ -482,6 +482,13 @@ class PatchichiPatchbayManager(PatchbayManager):
                     continue
                 
                 full_port_name = f"{group_name}:{line}"
+                
+                if port_type is PortType.MIDI_ALSA:
+                    if port_mode is PortMode.OUTPUT:
+                        full_port_name = ":ALSA_OUT:" + full_port_name
+                    else:
+                        full_port_name = ":ALSA_IN:" + full_port_name
+
                 if full_port_name in added_ports:
                     _log(f'Port "{full_port_name}" is already present !')
                     continue
@@ -490,7 +497,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                 port_uuid += 1
                 group_id = self.add_port(
-                    f'{group_name}:{line}',
+                    full_port_name,
                     port_type.value,
                     int(port_flags | port_mode),
                     port_uuid)
