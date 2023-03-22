@@ -485,9 +485,9 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
                 if port_type is PortType.MIDI_ALSA:
                     if port_mode is PortMode.OUTPUT:
-                        full_port_name = ":ALSA_OUT:" + full_port_name
+                        full_port_name = ":ALSA_OUT:0:0:" + full_port_name
                     else:
-                        full_port_name = ":ALSA_IN:" + full_port_name
+                        full_port_name = ":ALSA_IN:0:0:" + full_port_name
 
                 if full_port_name in added_ports:
                     _log(f'Port "{full_port_name}" is already present !')
