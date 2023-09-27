@@ -9,12 +9,13 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, PortgroupMem, Group)
+    GroupPos, JackPortFlag, PortgroupMem)
 from patchbay import (
     CanvasMenu,
     Callbacker,
     CanvasOptionsDialog,
-    PatchbayManager)
+    PatchbayManager,
+    Group)
 from patchbay.patchbay_manager import (
     JACK_METADATA_ICON_NAME,
     JACK_METADATA_ORDER,
