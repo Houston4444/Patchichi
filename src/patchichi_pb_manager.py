@@ -9,7 +9,7 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, PortgroupMem)
+    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag)
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -597,15 +597,11 @@ class PatchichiPatchbayManager(PatchbayManager):
             _logger.error(f'Failed to open file "{str(path)}", {str(e)}')
             return False
 
-        try:
-            editor_text: str = json_dict['editor_text']
-            connections: list[tuple[str, str]] = json_dict['connections']
-            group_positions: list[dict] = json_dict['group_positions']
-            portgroups: list[dict] = json_dict['portgroups']
-        except:
-            _logger.error(
-                f'Failed to open file "{str(path)}, contents are incomplete')
-            return False
+        editor_text: str = json_dict.get('editor_text')
+        connections: list[tuple[str, str]] = json_dict.get('connections')
+        group_positions: list[dict] = json_dict.get('group_positions')
+        views: dict = json_dict.get('views')
+        portgroups: list[dict] = json_dict.get('portgroups')
 
         _logger.info(f'Loading file {str(path)}')
             
@@ -613,10 +609,58 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.group_positions.clear()
         self.portgroups_memory.clear()
+        self.views.clear()
 
-        for gpos_dict in group_positions:
-            self.group_positions.append(
-                GroupPos.from_serialized_dict(gpos_dict))
+        if isinstance(views, dict):
+            for view_str, v_dict in views.items():
+                if not isinstance(v_dict, dict):
+                    continue
+                
+                if not (isinstance(view_str, str)
+                        and view_str.upper().startswith('VIEW_')):
+                    continue
+
+                view_str = view_str.upper().replace('VIEW_', '', 1)
+                if not view_str.isdigit():
+                    continue
+
+                view_number = int(view_str)
+                self.views[view_number] = {}
+                
+                for ptv_str, ptv_dict in v_dict.items():
+                    if not isinstance(ptv_dict, dict):
+                        continue
+                    
+                    if not (isinstance(ptv_str, str)):
+                        continue
+                    
+                    ptv = PortTypesViewFlag.from_config_str(ptv_str)
+                    if not ptv:
+                        continue
+                    
+                    self.views[view_number][ptv] = {}
+                    
+                    for group_name, gpos_dict in ptv_dict.items():
+                        if not isinstance(gpos_dict, dict):
+                            continue
+                        
+                        if not isinstance(group_name, str):
+                            continue
+                        
+                        self.views[view_number][ptv][group_name] = \
+                            GroupPos.from_new_dict(ptv, group_name, gpos_dict)
+
+        elif isinstance(group_positions, list):
+            for gpos_dict in group_positions:
+                gpos = GroupPos.from_serialized_dict(gpos_dict)
+                self.views[self.VIEW_NUMBER] = {}
+                ptv_dict = self.views[self.VIEW_NUMBER].get(gpos.port_types_view)
+                if ptv_dict is None:
+                    ptv_dict = {}
+                    self.views[self.VIEW_NUMBER][gpos.port_types_view] = ptv_dict
+                
+                ptv_dict[gpos.group_name] = gpos
+
 
         for gp_mem_dict in portgroups:
             pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
