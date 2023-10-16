@@ -661,7 +661,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                 
                 ptv_dict[gpos.group_name] = gpos
 
-
         for gp_mem_dict in portgroups:
             pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
             for already_here in self.portgroups_memory:
