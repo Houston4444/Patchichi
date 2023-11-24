@@ -651,9 +651,21 @@ class PatchichiPatchbayManager(PatchbayManager):
                             GroupPos.from_new_dict(ptv, group_name, gpos_dict)
 
         elif isinstance(group_positions, list):
+            self.views[self.VIEW_NUMBER] = {}
+
+            higher_ptv_int = (PortTypesViewFlag.AUDIO
+                              | PortTypesViewFlag.MIDI
+                              | PortTypesViewFlag.CV).value
+
             for gpos_dict in group_positions:
+                higher_ptv_int = max(
+                    higher_ptv_int, gpos_dict['port_types_view'])
+
+            for gpos_dict in group_positions:
+                if gpos_dict['port_types_view'] == higher_ptv_int:
+                    gpos_dict['port_types_view'] = PortTypesViewFlag.ALL.value
+
                 gpos = GroupPos.from_serialized_dict(gpos_dict)
-                self.views[self.VIEW_NUMBER] = {}
                 ptv_dict = self.views[self.VIEW_NUMBER].get(gpos.port_types_view)
                 if ptv_dict is None:
                     ptv_dict = {}
