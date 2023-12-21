@@ -1,11 +1,11 @@
 
 
-import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 from PyQt5.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
-    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget, QMessageBox)
+    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
@@ -299,3 +299,8 @@ class MainWindow(QMainWindow):
     
         super().closeEvent(event)
     
+    def keyPressEvent(self, event: QKeyEvent):
+        super().keyPressEvent(event)
+        
+        if event.text().isdigit() and event.modifiers() & Qt.AltModifier:
+            self.patchbay_manager.change_view(int(event.text()))
