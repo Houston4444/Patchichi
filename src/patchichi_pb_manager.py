@@ -610,6 +610,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.group_positions.clear()
         self.portgroups_memory.clear()
         self.views.clear()
+        self.view_number = 1
 
         if isinstance(views, list):
             indexes = set[int]()
@@ -741,6 +742,9 @@ class PatchichiPatchbayManager(PatchbayManager):
                     self.views[self.view_number][gpos.port_types_view] = ptv_dict
                 
                 ptv_dict[gpos.group_name] = gpos
+
+        else:
+            self.views[self.view_number] = {}
 
         for gp_mem_dict in portgroups:
             pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
