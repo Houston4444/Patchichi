@@ -681,6 +681,14 @@ class PatchichiPatchbayManager(PatchbayManager):
 
             self.sort_views_by_index()
 
+            for view_key in self.views.keys():
+                # select the first view
+                self.view_number = view_key
+                break
+            else:
+                # no views in the file, write an empty view
+                self.views[self.view_number] = {}
+
         # if isinstance(views, dict):
         #     for view_str, v_dict in views.items():
         #         if not isinstance(v_dict, dict):
