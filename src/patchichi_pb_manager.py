@@ -9,7 +9,7 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag)
+    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag, ViewData)
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -611,21 +611,49 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.portgroups_memory.clear()
         self.views.clear()
 
-        if isinstance(views, dict):
-            for view_str, v_dict in views.items():
+        if isinstance(views, list):
+            indexes = set[int]()
+            missing_indexes = set[int]()
+            
+            # first check for missing or duplicate indexes
+            for v_dict in views:
+                if not isinstance(v_dict, dict):
+                    _logger.warning('View is not a dict')
+                    continue
+                
+                index = v_dict.get('index')
+                if not isinstance(index, int) or index in indexes:
+                    missing_indexes.add(views.index(v_dict))
+                else:
+                    indexes.add(index)
+
+            if missing_indexes:
+                missing_list = sorted(missing_indexes)
+                for i in missing_list:
+                    index = i + 1
+                    while index in indexes:
+                        index += 1
+                    self.views[i]['index'] = index
+                    indexes.add(index)
+            
+            # now we can assume all views have an index
+            # let's parse the list of dicts
+            for v_dict in views:
                 if not isinstance(v_dict, dict):
                     continue
                 
-                if not (isinstance(view_str, str)
-                        and view_str.upper().startswith('VIEW_')):
-                    continue
-
-                view_str = view_str.upper().replace('VIEW_', '', 1)
-                if not view_str.isdigit():
-                    continue
-
-                view_number = int(view_str)
+                view_number = v_dict['index']
                 self.views[view_number] = {}
+                name = v_dict.get('name')
+                port_types_str = v_dict.get('default_port_types')
+                
+                if name is not None:
+                    self.write_view_data(view_number, name=name)
+                if port_types_str is not None:
+                    default_port_types = PortTypesViewFlag.from_config_str(
+                        port_types_str)
+                    self.write_view_data(
+                        view_number, port_types=default_port_types)
                 
                 for ptv_str, ptv_dict in v_dict.items():
                     if not isinstance(ptv_dict, dict):
@@ -650,8 +678,49 @@ class PatchichiPatchbayManager(PatchbayManager):
                         self.views[view_number][ptv][group_name] = \
                             GroupPos.from_new_dict(ptv, group_name, gpos_dict)
 
+            self.sort_views_by_index()
+
+        # if isinstance(views, dict):
+        #     for view_str, v_dict in views.items():
+        #         if not isinstance(v_dict, dict):
+        #             continue
+                
+        #         if not (isinstance(view_str, str)
+        #                 and view_str.upper().startswith('VIEW_')):
+        #             continue
+
+        #         view_str = view_str.upper().replace('VIEW_', '', 1)
+        #         if not view_str.isdigit():
+        #             continue
+
+        #         view_number = int(view_str)
+        #         self.views[view_number] = {}
+                
+        #         for ptv_str, ptv_dict in v_dict.items():
+        #             if not isinstance(ptv_dict, dict):
+        #                 continue
+                    
+        #             if not (isinstance(ptv_str, str)):
+        #                 continue
+                    
+        #             ptv = PortTypesViewFlag.from_config_str(ptv_str)
+        #             if not ptv:
+        #                 continue
+                    
+        #             self.views[view_number][ptv] = {}
+                    
+        #             for group_name, gpos_dict in ptv_dict.items():
+        #                 if not isinstance(gpos_dict, dict):
+        #                     continue
+                        
+        #                 if not isinstance(group_name, str):
+        #                     continue
+                        
+        #                 self.views[view_number][ptv][group_name] = \
+        #                     GroupPos.from_new_dict(ptv, group_name, gpos_dict)
+
         elif isinstance(group_positions, list):
-            self.views[self.VIEW_NUMBER] = {}
+            self.views[self.view_number] = {}
 
             higher_ptv_int = (PortTypesViewFlag.AUDIO
                               | PortTypesViewFlag.MIDI
@@ -666,10 +735,10 @@ class PatchichiPatchbayManager(PatchbayManager):
                     gpos_dict['port_types_view'] = PortTypesViewFlag.ALL.value
 
                 gpos = GroupPos.from_serialized_dict(gpos_dict)
-                ptv_dict = self.views[self.VIEW_NUMBER].get(gpos.port_types_view)
+                ptv_dict = self.views[self.view_number].get(gpos.port_types_view)
                 if ptv_dict is None:
                     ptv_dict = {}
-                    self.views[self.VIEW_NUMBER][gpos.port_types_view] = ptv_dict
+                    self.views[self.view_number][gpos.port_types_view] = ptv_dict
                 
                 ptv_dict[gpos.group_name] = gpos
 
@@ -681,6 +750,7 @@ class PatchichiPatchbayManager(PatchbayManager):
             else:
                 self.portgroups_memory.append(pg_mem)
 
+        print('viewws keys', [v for v in self.views.keys()])
         self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
         self._prevent_next_editor_update = False
