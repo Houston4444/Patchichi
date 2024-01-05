@@ -12,8 +12,9 @@ from about_dialog import AboutDialog
 from xdg import xdg_data_home
 from manual_tools import get_manual_path, open_in_browser
 
-from patchbay.surclassed_widgets import ZoomSlider
+from patchbay.view_selector_frame import ViewSelectorWidget
 from patchbay.type_filter_frame import TypeFilterFrame
+from patchbay.surclassed_widgets import ZoomSlider
 
 from ui.main_win import Ui_MainWindow
 
@@ -135,6 +136,8 @@ class MainWindow(QMainWindow):
         self.main_menu.insertMenu(
             self.last_separator, main.patchbay_manager.canvas_menu)
         
+        views_widget = ViewSelectorWidget(self)
+        views_widget.set_patchbay_manager(main.patchbay_manager)
         type_filter_frame = TypeFilterFrame(self)
         type_filter_frame.set_patchbay_manager(main.patchbay_manager)
         zoom_widget = ZoomSlider(self)
@@ -151,6 +154,7 @@ class MainWindow(QMainWindow):
             sep_widgets.append(sep_widget)
 
         self.ui.toolBar.addWidget(sep_widgets[0])
+        self.ui.toolBar.addWidget(views_widget)
         self.ui.toolBar.addWidget(type_filter_frame)
         self.ui.toolBar.addWidget(sep_widgets[1])
         self.ui.toolBar.addWidget(zoom_widget)

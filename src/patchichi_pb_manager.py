@@ -754,6 +754,8 @@ class PatchichiPatchbayManager(PatchbayManager):
         else:
             self.views[self.view_number] = {}
 
+        self.sg.views_changed.emit()
+
         for gp_mem_dict in portgroups:
             pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
             for already_here in self.portgroups_memory:
@@ -761,8 +763,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                     break
             else:
                 self.portgroups_memory.append(pg_mem)
-
-        print('viewws keys', [v for v in self.views.keys()])
+        
         self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
         self._prevent_next_editor_update = False
