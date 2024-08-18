@@ -12,10 +12,12 @@ class JackStatesWidget(PatchbayToolsWidget):
         
 
 class PatchFilterFrame(FilterFrame):
-    pass
+    ...
 
         
 class PatchichiGraphicsView(PatchGraphicsView):
-    pass
+    ...
 
 
+class PatchichiToolBar(PatchbayToolBar):
+    ...

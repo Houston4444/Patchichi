@@ -272,7 +272,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="PatchichiToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -399,6 +399,11 @@
   <customwidget>
    <class>CodeEditor</class>
    <extends>QPlainTextEdit</extends>
+   <header>promoted_widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>PatchichiToolBar</class>
+   <extends>QToolBar</extends>
    <header>promoted_widgets</header>
   </customwidget>
  </customwidgets>

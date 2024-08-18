@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 from PyQt5.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
-    QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
-from PyQt5.QtGui import QKeyEvent
+    QBoxLayout, QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
+from PyQt5.QtGui import QKeyEvent, QResizeEvent
 from PyQt5.QtCore import Qt, pyqtSlot
 
 from about_dialog import AboutDialog
@@ -15,6 +15,8 @@ from manual_tools import get_manual_path, open_in_browser
 from patchbay.view_selector_frame import ViewSelectorWidget
 from patchbay.type_filter_frame import TypeFilterFrame
 from patchbay.surclassed_widgets import ZoomSlider
+from patchbay.tools_widgets import PatchbayToolsWidget
+from patchbay.base_elements import ToolDisplayed
 
 from ui.main_win import Ui_MainWindow
 
@@ -30,7 +32,7 @@ if TYPE_CHECKING:
 _translate = QApplication.translate
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow):    
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
@@ -101,11 +103,18 @@ class MainWindow(QMainWindow):
         self.ui.toolBar.toggleViewAction().setEnabled(False)
         self.ui.toolBar.toggleViewAction().setVisible(False)
         
+        
         self._current_path: Optional[Path] = None
+        
+        patchbay_tools_act = self.ui.toolBar.addWidget(PatchbayToolsWidget())
+        
+        self.patchbay_tools = self.ui.toolBar.widgetForAction(patchbay_tools_act)
+        self.patchbay_tools.ui.mainLayout.setDirection(QBoxLayout.RightToLeft)
         
     def finish_init(self, main: 'Main'):
         self.patchbay_manager = main.patchbay_manager
         self.settings = main.settings
+        self.ui.toolBar.set_patchbay_manager(main.patchbay_manager)
         self.ui.filterFrame.set_patchbay_manager(main.patchbay_manager)
         main.patchbay_manager.sg.filters_bar_toggle_wanted.connect(
             self.toggle_filter_frame_visibility)
@@ -136,29 +145,20 @@ class MainWindow(QMainWindow):
         self.main_menu.insertMenu(
             self.last_separator, main.patchbay_manager.canvas_menu)
         
-        views_widget = ViewSelectorWidget(self)
-        views_widget.set_patchbay_manager(main.patchbay_manager)
-        type_filter_frame = TypeFilterFrame(self)
-        type_filter_frame.set_patchbay_manager(main.patchbay_manager)
-        zoom_widget = ZoomSlider(self)
-        zoom_widget.set_patchbay_manager(main.patchbay_manager)
+        default_disp_widg = (
+            ToolDisplayed.PORT_TYPES_VIEW
+            | ToolDisplayed.ZOOM_SLIDER
+            | ToolDisplayed.TRANSPORT_CLOCK
+            | ToolDisplayed.TRANSPORT_PLAY_STOP
+            | ToolDisplayed.BUFFER_SIZE
+            | ToolDisplayed.SAMPLERATE
+            | ToolDisplayed.XRUNS
+            | ToolDisplayed.DSP_LOAD)
         
-        sep_widgets = list[QWidget]()
-        for i in range(3):
-            sep_widget = QWidget()
-            layout = QVBoxLayout(sep_widget)
-            layout.addSpacerItem(QSpacerItem(
-                0, 0,
-                QSizePolicy.MinimumExpanding,
-                QSizePolicy.MinimumExpanding))
-            sep_widgets.append(sep_widget)
+        default_disp_str = self.settings.value('tool_bar/jack_elements', '', type=str)
 
-        self.ui.toolBar.addWidget(sep_widgets[0])
-        self.ui.toolBar.addWidget(views_widget)
-        self.ui.toolBar.addWidget(type_filter_frame)
-        self.ui.toolBar.addWidget(sep_widgets[1])
-        self.ui.toolBar.addWidget(zoom_widget)
-        self.ui.toolBar.addWidget(sep_widgets[2])
+        self.ui.toolBar.set_default_displayed_widgets(
+            default_disp_widg.filtered_by_string(default_disp_str))
 
     def _menubar_shown_toggled(self, state: int):
         self.ui.menubar.setVisible(bool(state))
@@ -240,6 +240,22 @@ class MainWindow(QMainWindow):
 
         return scenes_dir
     
+    def load_scene_at_startup(self, scene_name: str) -> bool:
+        if scene_name.endswith('.patchichi.json'):
+            scene_path = Path(scene_name)
+        else:
+            scene_path = self._get_scenes_path() / f'{scene_name}.patchichi.json'
+        
+        if self.patchbay_manager.load_file(scene_path):
+            self._current_path = scene_path
+            scene_name = self._current_path.name.rpartition(
+                '.patchichi.json')[0]
+            self.setWindowTitle(
+                f"Patchichi - {scene_name}")
+            return True
+
+        return False
+    
     @pyqtSlot()
     def _load_scene(self):
         ret, ok = QFileDialog.getOpenFileName(
@@ -300,6 +316,9 @@ class MainWindow(QMainWindow):
         self.settings.setValue(
             'MainWindow/splitter_portlogs_sizes',
             self.ui.splitterPortsVsLogs.sizes())
+        self.settings.setValue(
+            'tool_bar/jack_elements',
+            self.ui.toolBar.get_displayed_widgets().to_save_string())
     
         super().closeEvent(event)
     
