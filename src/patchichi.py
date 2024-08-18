@@ -3,11 +3,14 @@
 APP_TITLE = 'Patchichi'
 VERSION = (0, 3, 0)
 
+from json import load
 import sys
 
 # manage arguments now
 # Yes, that is not conventional to do this kind of code during imports
 # but it allows faster answer for --version argument.
+scene_to_load = ''
+
 for arg in sys.argv[1:]:
     if arg == '--version':
         sys.stdout.write('.'.join([str(i) for i in VERSION]) + '\n')
@@ -16,10 +19,14 @@ for arg in sys.argv[1:]:
         sys.stdout.write(
             "Abstract JACK patchbay application\n"
             "Usage: patchichi [--help] [--version]\n"
+            "   or: patchichi SCENE_NAME\n"
             "  --help     show this help\n"
             "  --version  print program version\n"
         )
         sys.exit(0)
+    
+    if not scene_to_load:
+        scene_to_load = arg
 
 
 import signal
@@ -110,17 +117,24 @@ def main_loop():
     main_win.finish_init(main)
     main_win.show()
 
+    load_scene_ok = False
+    if scene_to_load:
+        load_scene_ok = main_win.load_scene_at_startup(scene_to_load)
+        print('scene to load:', scene_to_load, 'OK' if load_scene_ok else 'Failed')
+    
+    last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
+
     # auto load patch as it was at last exit
     # It doesn't loads a saved scene
     # 'Save file' action will ask the destination path
-    last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
-    if last_patch.is_file():
-        pb_manager.load_file(last_patch)
-    else:
-        default_patch = (Path(__file__).parent.parent
-                         / 'scenes' / 'default_cardboard.patchichi.json')
-        if default_patch.is_file():
-            pb_manager.load_file(default_patch)
+    if not load_scene_ok:
+        if last_patch.is_file():
+            pb_manager.load_file(last_patch)
+        else:
+            default_patch = (Path(__file__).parent.parent
+                            / 'scenes' / 'default_cardboard.patchichi.json')
+            if default_patch.is_file():
+                pb_manager.load_file(default_patch)
 
     app.exec()
     settings.sync()
