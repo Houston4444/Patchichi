@@ -649,14 +649,20 @@ class PatchichiPatchbayManager(PatchbayManager):
                 self.views[view_number] = {}
                 name = v_dict.get('name')
                 port_types_str = v_dict.get('default_port_types')
+                is_white_list = v_dict.get('is_white_list')
                 
-                if name is not None:
+                if isinstance(name, str):
                     self.write_view_data(view_number, name=name)
-                if port_types_str is not None:
+
+                if isinstance(port_types_str, str):
                     default_port_types = PortTypesViewFlag.from_config_str(
                         port_types_str)
                     self.write_view_data(
                         view_number, port_types=default_port_types)
+
+                if is_white_list is not None:
+                   self.write_view_data(
+                       view_number, white_list_view=bool(is_white_list)) 
                 
                 for ptv_str, ptv_dict in v_dict.items():
                     if not isinstance(ptv_dict, dict):
