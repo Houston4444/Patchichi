@@ -547,7 +547,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         for connection in self.connections:
             connection.add_to_canvas()
                 
-        self.optimize_operation(False)        
+        self.optimize_operation(False)
         self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
