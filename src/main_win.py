@@ -46,9 +46,12 @@ class MainWindow(QMainWindow):
         self.main_menu.addAction(self.ui.actionShowMenuBar)
         self.main_menu.addAction(self.ui.actionQuit)
         
-        self.menu_button = self.ui.toolBar.widgetForAction(self.ui.actionMainMenu)
+        self.menu_button = self.ui.toolBar.widgetForAction(
+            self.ui.actionMainMenu)
+
         if TYPE_CHECKING:
             assert isinstance(self.menu_button, QToolButton)
+
         self.menu_button.setPopupMode(QToolButton.InstantPopup)
         self.menu_button.setMenu(self.main_menu)
         
@@ -197,8 +200,7 @@ class MainWindow(QMainWindow):
             return
         
         self.patchbay_manager.select_group(group_name)
-        
-    
+
     def refresh_patchbay(self):
         if self.patchbay_manager is None:
             return
@@ -324,6 +326,7 @@ class MainWindow(QMainWindow):
     
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
-        
-        if event.text().isdigit() and event.modifiers() & Qt.AltModifier:
+
+        if (event.text().isdigit()
+                and event.modifiers() & Qt.KeyboardModifier.AltModifier):
             self.patchbay_manager.change_view(int(event.text()))

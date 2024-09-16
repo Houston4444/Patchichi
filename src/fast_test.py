@@ -2,7 +2,6 @@
 import time
 from typing import Callable
 
-
 class Pali:
     def __init__(self, name: str) -> None:
         self.name = name
@@ -19,7 +18,7 @@ class Chani:
         print('sortie')
 
 
-long_list = [i for i in range(1000000)]
+long_list = [i for i in range(100000)]
 
 def direct_search():
     i = 999999
@@ -38,6 +37,19 @@ def measure(callable: Callable):
     after = time.time()
     print('tadam', after - before)
 
+AMSTA = 'foulou'
+AMSTAB = 'foulou'
 
-measure(direct_search)
-measure(setted_search)
+def kiki_eq():
+    for l in long_list:
+        if AMSTA == AMSTAB:
+            ...
+            
+def kiki_is():
+    for l in long_list:
+        if AMSTA is AMSTAB:
+            ...
+    
+
+measure(kiki_eq)
+measure(kiki_is)

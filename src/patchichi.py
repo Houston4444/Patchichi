@@ -120,7 +120,6 @@ def main_loop():
     load_scene_ok = False
     if scene_to_load:
         load_scene_ok = main_win.load_scene_at_startup(scene_to_load)
-        print('scene to load:', scene_to_load, 'OK' if load_scene_ok else 'Failed')
     
     last_patch = Path(settings.fileName()).parent / 'last.patchichi.json'
 

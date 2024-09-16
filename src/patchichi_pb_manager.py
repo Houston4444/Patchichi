@@ -22,6 +22,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PORT_GROUP,
     JACK_METADATA_PRETTY_NAME,
     JACK_METADATA_SIGNAL_TYPE)
+from patchbay.tools_widgets import JackAgnostic
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
 
@@ -579,7 +580,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.set_canvas_menu(CanvasMenu(self))
         self.set_filter_frame(main.main_win.ui.filterFrame)
-        # main.main_win.patchbay_tools.set_jack_agnostic()
+        main.main_win.patchbay_tools.set_jack_agnostic(JackAgnostic.DUMMY)
         self.set_tools_widget(main.main_win.patchbay_tools)
         self.set_options_dialog(
             CanvasOptionsDialog(self.main_win, self, self._settings))
@@ -696,45 +697,6 @@ class PatchichiPatchbayManager(PatchbayManager):
             else:
                 # no views in the file, write an empty view
                 self.views[self.view_number] = {}
-
-        # if isinstance(views, dict):
-        #     for view_str, v_dict in views.items():
-        #         if not isinstance(v_dict, dict):
-        #             continue
-                
-        #         if not (isinstance(view_str, str)
-        #                 and view_str.upper().startswith('VIEW_')):
-        #             continue
-
-        #         view_str = view_str.upper().replace('VIEW_', '', 1)
-        #         if not view_str.isdigit():
-        #             continue
-
-        #         view_number = int(view_str)
-        #         self.views[view_number] = {}
-                
-        #         for ptv_str, ptv_dict in v_dict.items():
-        #             if not isinstance(ptv_dict, dict):
-        #                 continue
-                    
-        #             if not (isinstance(ptv_str, str)):
-        #                 continue
-                    
-        #             ptv = PortTypesViewFlag.from_config_str(ptv_str)
-        #             if not ptv:
-        #                 continue
-                    
-        #             self.views[view_number][ptv] = {}
-                    
-        #             for group_name, gpos_dict in ptv_dict.items():
-        #                 if not isinstance(gpos_dict, dict):
-        #                     continue
-                        
-        #                 if not isinstance(group_name, str):
-        #                     continue
-                        
-        #                 self.views[view_number][ptv][group_name] = \
-        #                     GroupPos.from_new_dict(ptv, group_name, gpos_dict)
 
         elif isinstance(group_positions, list):
             self.views[self.view_number] = {}
