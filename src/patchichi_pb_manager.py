@@ -580,8 +580,8 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.set_canvas_menu(CanvasMenu(self))
         self.set_filter_frame(main.main_win.ui.filterFrame)
-        main.main_win.patchbay_tools.set_jack_agnostic(JackAgnostic.DUMMY)
-        self.set_tools_widget(main.main_win.patchbay_tools)
+        main.main_win._tools_widgets.set_jack_agnostic(JackAgnostic.DUMMY)
+        self.set_tools_widget(main.main_win._tools_widgets)
         self.set_options_dialog(
             CanvasOptionsDialog(self.main_win, self, self._settings))
                 

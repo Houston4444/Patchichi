@@ -16,6 +16,9 @@ from patchbay.view_selector_frame import ViewSelectorWidget
 from patchbay.type_filter_frame import TypeFilterFrame
 from patchbay.surclassed_widgets import ZoomSlider
 from patchbay.tools_widgets import PatchbayToolsWidget
+from patchbay.bar_widget_transport import BarWidgetTransport
+from patchbay.bar_widget_jack import BarWidgetJack
+from patchbay.bar_widget_canvas import BarWidgetCanvas
 from patchbay.base_elements import ToolDisplayed
 
 from ui.main_win import Ui_MainWindow
@@ -102,22 +105,17 @@ class MainWindow(QMainWindow):
         
         self.ui.graphicsView.setFocus()
         
-        # prevent toolbar hideability
-        self.ui.toolBar.toggleViewAction().setEnabled(False)
-        self.ui.toolBar.toggleViewAction().setVisible(False)
-        
-        
         self._current_path: Optional[Path] = None
-        
-        patchbay_tools_act = self.ui.toolBar.addWidget(PatchbayToolsWidget())
-        
-        self.patchbay_tools = self.ui.toolBar.widgetForAction(patchbay_tools_act)
-        self.patchbay_tools.ui.mainLayout.setDirection(QBoxLayout.RightToLeft)
+
+        self._tools_widgets = PatchbayToolsWidget()
+        self._tools_widgets.set_tool_bars(
+            self.ui.toolBar, self.ui.toolBarTransport,
+            self.ui.toolBarJack, self.ui.toolBarCanvas)
         
     def finish_init(self, main: 'Main'):
         self.patchbay_manager = main.patchbay_manager
         self.settings = main.settings
-        self.ui.toolBar.set_patchbay_manager(main.patchbay_manager)
+        # self.ui.toolBar.set_patchbay_manager(main.patchbay_manager)
         self.ui.filterFrame.set_patchbay_manager(main.patchbay_manager)
         main.patchbay_manager.sg.filters_bar_toggle_wanted.connect(
             self.toggle_filter_frame_visibility)
@@ -160,7 +158,7 @@ class MainWindow(QMainWindow):
         
         default_disp_str = self.settings.value('tool_bar/jack_elements', '', type=str)
 
-        self.ui.toolBar.set_default_displayed_widgets(
+        main.patchbay_manager._tools_widget.change_tools_displayed(
             default_disp_widg.filtered_by_string(default_disp_str))
 
     def _menubar_shown_toggled(self, state: int):
@@ -310,6 +308,10 @@ class MainWindow(QMainWindow):
         
         open_in_browser(self, get_manual_path())
 
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._tools_widgets.main_win_resize(self)
+
     def closeEvent(self, event):
         self.settings.setValue('MainWindow/geometry', self.saveGeometry())
         self.settings.setValue(
@@ -318,9 +320,13 @@ class MainWindow(QMainWindow):
         self.settings.setValue(
             'MainWindow/splitter_portlogs_sizes',
             self.ui.splitterPortsVsLogs.sizes())
-        self.settings.setValue(
-            'tool_bar/jack_elements',
-            self.ui.toolBar.get_displayed_widgets().to_save_string())
+        
+        if self.patchbay_manager is not None:
+            tools_displayed = \
+                self.patchbay_manager._tools_widget._tools_displayed
+            self.settings.setValue(
+                'tool_bar/jack_elements',
+                tools_displayed.to_save_string())
     
         super().closeEvent(event)
     
