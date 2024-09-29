@@ -15,7 +15,7 @@ from manual_tools import get_manual_path, open_in_browser
 from patchbay.view_selector_frame import ViewSelectorWidget
 from patchbay.type_filter_frame import TypeFilterFrame
 from patchbay.surclassed_widgets import ZoomSlider
-from patchbay.tools_widgets import PatchbayToolsWidget
+from patchbay.tools_widgets import PatchbayToolsWidget, TextWithIcons
 from patchbay.bar_widget_transport import BarWidgetTransport
 from patchbay.bar_widget_jack import BarWidgetJack
 from patchbay.bar_widget_canvas import BarWidgetCanvas
@@ -156,8 +156,14 @@ class MainWindow(QMainWindow):
             | ToolDisplayed.XRUNS
             | ToolDisplayed.DSP_LOAD)
         
-        default_disp_str = self.settings.value('tool_bar/jack_elements', '', type=str)
-
+        text_with_icons = TextWithIcons.by_name(
+            self.settings.value(
+                'tool_bar/text_with_icons', 'YES'))
+        default_disp_str = self.settings.value(
+            'tool_bar/jack_elements', '', type=str)
+        
+        main.patchbay_manager._tools_widget.change_text_with_icons(
+            text_with_icons)
         main.patchbay_manager._tools_widget.change_tools_displayed(
             default_disp_widg.filtered_by_string(default_disp_str))
 
@@ -322,6 +328,10 @@ class MainWindow(QMainWindow):
             self.ui.splitterPortsVsLogs.sizes())
         
         if self.patchbay_manager is not None:
+            self.settings.setValue(
+                'tool_bar/text_with_icons',
+                self.patchbay_manager._tools_widget._text_with_icons.name)
+
             tools_displayed = \
                 self.patchbay_manager._tools_widget._tools_displayed
             self.settings.setValue(
