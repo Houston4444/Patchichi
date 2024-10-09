@@ -9,7 +9,7 @@ from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
 from patchbay.base_elements import (
-    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag, ViewData)
+    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag)
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -41,11 +41,12 @@ MEMORY_FILE = 'canvas.json'
 
 class RenameBuffer:
     '''This serves for group or port renaming
-       with the editor. This is only used when the group name
-       or the port name becomes empty.
-       If one and only one line has changed since last update
-       Connections, group positions and portgroups memories
-       will be renamed'''
+    with the editor. This is only used when the group name
+    or the port name becomes empty.
+
+    If one and only one line has changed since last update,
+    connections, group positions and portgroups memories
+    will be renamed'''
     def __init__(self, line: int, old: str, gp_name=''):
         self.line = line
         self.old = old
@@ -175,12 +176,15 @@ class PatchichiPatchbayManager(PatchbayManager):
                       default_theme_name='Yellow Boards')
 
     def refresh(self):
-        self.update_from_text(self.main_win.ui.plainTextEditPorts.toPlainText())
+        self.update_from_text(
+            self.main_win.ui.plainTextEditPorts.toPlainText())
     
-    def _check_port_or_group_renaming(self, text: str) -> list[tuple[str, str]]:
-        '''checks if there is a group or a port renamed only in editor,
-            renames group positions, portgroups, and connections,
-            returns list of connections as tuple[str, str]'''
+    def _check_port_or_group_renaming(
+            self, text: str) -> list[tuple[str, str]]:
+        '''Checks if there is a group or a port renamed only in editor,
+        renames group positions, portgroups, and connections,
+        returns list of connections as tuple[str, str]'''
+
         group_renamed = tuple[str, str]()
         port_renamed = tuple[str, str, str]()
         tuple_conns = list[tuple[str, str]]()
@@ -296,10 +300,17 @@ class PatchichiPatchbayManager(PatchbayManager):
             for gpos in self.group_positions:
                 if gpos.group_name == group_renamed[0]:
                     gpos.group_name = group_renamed[1]
-                    
-            for pg_mem in self.portgroups_memory:
-                if pg_mem.group_name == group_renamed[0]:
-                    pg_mem.group_name = group_renamed[1]
+            
+            for ptype_dict in self.portgroups_memory.values():
+                if group_renamed[0] not in ptype_dict.keys():
+                    continue
+
+                ptype_dict[group_renamed[1]] = \
+                    ptype_dict.pop(group_renamed[0])
+
+                for pmode_list in ptype_dict[group_renamed[1]].values():
+                    for pg_mem in pmode_list:
+                            pg_mem.group_name = group_renamed[1]
             
             for conn in self.connections:
                 out_p = conn.port_out.full_name
@@ -315,18 +326,22 @@ class PatchichiPatchbayManager(PatchbayManager):
         elif port_renamed:
             gp_name, old_p_name, new_p_name = port_renamed
 
-            for pg_mem in self.portgroups_memory:
-                if pg_mem.group_name == gp_name:
-                    new_port_names = list[str]()
+            for ptype_dict in self.portgroups_memory.values():
+                gp_dict = ptype_dict.get(gp_name)
+                if gp_dict is None:
+                    continue
 
-                    for port_name in pg_mem.port_names:
-                        if port_name == old_p_name:
-                            port_name = new_p_name
+                for port_mode, pmode_list in gp_dict.items():
+                    for pg_mem in pmode_list:
+                        new_port_names = list[str]()
+                        
+                        for port_name in pg_mem.port_names:
+                            if port_name == old_p_name:
+                                port_name = new_p_name
                             
-                        new_port_names.append(port_name)
-
-                    pg_mem.port_names.clear()
-                    pg_mem.port_names.extend(new_port_names)
+                            new_port_names.append(port_name)
+                        pg_mem.port_names.clear()
+                        pg_mem.port_names.extend(new_port_names)
             
             for conn in self.connections:
                 out_p = conn.port_out.full_name
@@ -604,7 +619,9 @@ class PatchichiPatchbayManager(PatchbayManager):
         connections: list[tuple[str, str]] = json_dict.get('connections')
         group_positions: list[dict] = json_dict.get('group_positions')
         views: dict = json_dict.get('views')
-        portgroups: list[dict] = json_dict.get('portgroups')
+        portgroups: dict[str, dict[str, dict[str, list]]] = \
+            json_dict.get('portgroups')
+        version: tuple[int, int] = json_dict.get('version')
 
         _logger.info(f'Loading file {str(path)}')
             
@@ -726,13 +743,98 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.sg.views_changed.emit()
 
-        for gp_mem_dict in portgroups:
-            pg_mem = PortgroupMem.from_serialized_dict(gp_mem_dict)
-            for already_here in self.portgroups_memory:
-                if pg_mem.has_a_common_port_with(already_here):
-                    break
-            else:
-                self.portgroups_memory.append(pg_mem)
+        if isinstance(portgroups, dict):
+            for ptype_str, ptype_dict in portgroups.items():
+                try:
+                    port_type = PortType[ptype_str]
+                    assert isinstance(ptype_dict, dict)
+                except:
+                    continue
+                nw_ptype_dict = self.portgroups_memory[port_type] = \
+                    dict[str, dict[PortMode, list[PortgroupMem]]]()
+                
+                for gp_name, gp_dict in ptype_dict.items():
+                    if not isinstance(gp_dict, dict):
+                        continue
+                        
+                    nw_gp_dict = nw_ptype_dict[gp_name] = \
+                        dict[PortMode, list[PortgroupMem]]()
+                    
+                    for pmode_str, pmode_list in gp_dict.items():
+                        try:
+                            port_mode = PortMode[pmode_str]
+                            assert isinstance(pmode_list, list)
+                        except:
+                            continue
+                        
+                        nw_pmode_list = nw_gp_dict[port_mode] = \
+                            list[PortgroupMem]
+                        
+                        all_port_names = set[str]()
+                        
+                        for pg_mem_dict in pmode_list:
+                            if not isinstance(pg_mem_dict, dict):
+                                continue
+                            
+                            port_names = pg_mem_dict.get('port_names')
+                            if not isinstance(port_names, list):
+                                continue
+                            
+                            port_already_in_pg_mem = False
+                            for port_name in port_names:
+                                if port_name in all_port_names:
+                                    port_already_in_pg_mem = True
+                                    break
+                                    
+                                if isinstance(port_name, str):
+                                    all_port_names.add(port_name)
+                            
+                            if port_already_in_pg_mem:
+                                continue
+                            
+                            pg_mem = PortgroupMem.from_new_dict(pg_mem_dict)
+                            pg_mem.group_name = gp_name
+                            pg_mem.port_type = port_type
+                            pg_mem.port_mode = port_mode
+                            
+                            nw_pmode_list.append(pg_mem)
+                        
+        elif isinstance(portgroups, list): 
+            for pg_mem_dict in portgroups:
+                portgroups: list[dict]
+                pg_mem = PortgroupMem.from_serialized_dict(pg_mem_dict)
+                
+                ptype_dict = self.portgroups_memory.get(pg_mem.port_type)
+                if ptype_dict is None:
+                    ptype_dict = self.portgroups_memory[pg_mem.port_type] = \
+                        dict[str, dict[PortMode, list[PortgroupMem]]]()
+                
+                gp_name_dict = ptype_dict.get(pg_mem.group_name)
+                if gp_name_dict is None:
+                    gp_name_dict = ptype_dict[pg_mem.group_name] = \
+                        dict[PortMode, list[PortgroupMem]]()
+                
+                pmode_list = gp_name_dict.get(pg_mem.port_mode)
+                if pmode_list is None:
+                    pmode_list = gp_name_dict[pg_mem.port_mode] = \
+                        list[PortgroupMem]()
+
+                all_port_names = set[str]()
+                for portgroup_mem in pmode_list:
+                    for port_name in portgroup_mem.port_names:
+                        all_port_names.add(port_name)
+                
+                port_in_other_portgroup_mem = False
+
+                for port_name in pg_mem.port_names:
+                    if port_name in all_port_names:
+                        port_in_other_portgroup_mem = True
+                        break
+                
+                if port_in_other_portgroup_mem:
+                    continue
+                
+                pmode_list.append(pg_mem)
         
         self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
