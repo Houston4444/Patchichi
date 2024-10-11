@@ -22,6 +22,7 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PORT_GROUP,
     JACK_METADATA_PRETTY_NAME,
     JACK_METADATA_SIGNAL_TYPE)
+from patchbay.patchcanvas.base_enums import portgroups_mem_from_json
 from patchbay.tools_widgets import JackAgnostic
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
@@ -743,98 +744,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.sg.views_changed.emit()
 
-        if isinstance(portgroups, dict):
-            for ptype_str, ptype_dict in portgroups.items():
-                try:
-                    port_type = PortType[ptype_str]
-                    assert isinstance(ptype_dict, dict)
-                except:
-                    continue
-                nw_ptype_dict = self.portgroups_memory[port_type] = \
-                    dict[str, dict[PortMode, list[PortgroupMem]]]()
-                
-                for gp_name, gp_dict in ptype_dict.items():
-                    if not isinstance(gp_dict, dict):
-                        continue
-                        
-                    nw_gp_dict = nw_ptype_dict[gp_name] = \
-                        dict[PortMode, list[PortgroupMem]]()
-                    
-                    for pmode_str, pmode_list in gp_dict.items():
-                        try:
-                            port_mode = PortMode[pmode_str]
-                            assert isinstance(pmode_list, list)
-                        except:
-                            continue
-                        
-                        nw_pmode_list = nw_gp_dict[port_mode] = \
-                            list[PortgroupMem]
-                        
-                        all_port_names = set[str]()
-                        
-                        for pg_mem_dict in pmode_list:
-                            if not isinstance(pg_mem_dict, dict):
-                                continue
-                            
-                            port_names = pg_mem_dict.get('port_names')
-                            if not isinstance(port_names, list):
-                                continue
-                            
-                            port_already_in_pg_mem = False
-                            for port_name in port_names:
-                                if port_name in all_port_names:
-                                    port_already_in_pg_mem = True
-                                    break
-                                    
-                                if isinstance(port_name, str):
-                                    all_port_names.add(port_name)
-                            
-                            if port_already_in_pg_mem:
-                                continue
-                            
-                            pg_mem = PortgroupMem.from_new_dict(pg_mem_dict)
-                            pg_mem.group_name = gp_name
-                            pg_mem.port_type = port_type
-                            pg_mem.port_mode = port_mode
-                            
-                            nw_pmode_list.append(pg_mem)
-                        
-        elif isinstance(portgroups, list): 
-            for pg_mem_dict in portgroups:
-                portgroups: list[dict]
-                pg_mem = PortgroupMem.from_serialized_dict(pg_mem_dict)
-                
-                ptype_dict = self.portgroups_memory.get(pg_mem.port_type)
-                if ptype_dict is None:
-                    ptype_dict = self.portgroups_memory[pg_mem.port_type] = \
-                        dict[str, dict[PortMode, list[PortgroupMem]]]()
-                
-                gp_name_dict = ptype_dict.get(pg_mem.group_name)
-                if gp_name_dict is None:
-                    gp_name_dict = ptype_dict[pg_mem.group_name] = \
-                        dict[PortMode, list[PortgroupMem]]()
-                
-                pmode_list = gp_name_dict.get(pg_mem.port_mode)
-                if pmode_list is None:
-                    pmode_list = gp_name_dict[pg_mem.port_mode] = \
-                        list[PortgroupMem]()
-
-                all_port_names = set[str]()
-                for portgroup_mem in pmode_list:
-                    for port_name in portgroup_mem.port_names:
-                        all_port_names.add(port_name)
-                
-                port_in_other_portgroup_mem = False
-
-                for port_name in pg_mem.port_names:
-                    if port_name in all_port_names:
-                        port_in_other_portgroup_mem = True
-                        break
-                
-                if port_in_other_portgroup_mem:
-                    continue
-                
-                pmode_list.append(pg_mem)
+        self.portgroups_memory = portgroups_mem_from_json(portgroups)
         
         self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
