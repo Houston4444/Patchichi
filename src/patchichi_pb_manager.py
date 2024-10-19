@@ -22,7 +22,6 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PORT_GROUP,
     JACK_METADATA_PRETTY_NAME,
     JACK_METADATA_SIGNAL_TYPE)
-from patchbay.patchcanvas.base_enums import portgroups_mem_from_json
 from patchbay.tools_widgets import JackAgnostic
 from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
@@ -336,7 +335,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 if gp_dict is None:
                     continue
 
-                for port_mode, pmode_list in gp_dict.items():
+                for pmode_list in gp_dict.values():
                     for pg_mem in pmode_list:
                         new_port_names = list[str]()
                         
@@ -626,8 +625,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         connections: list[tuple[str, str]] = json_dict.get('connections')
         group_positions: list[dict] = json_dict.get('group_positions')
         self.views.eat_json_list(json_dict.get('views'), clear=True)
-        portgroups: dict[str, dict[str, dict[str, list]]] = \
-            json_dict.get('portgroups')
+        self.portgroups_memory.eat_json(json_dict.get('portgroups'))
         version: tuple[int, int] = json_dict.get('version')
 
         _logger.info(f'Loading file {str(path)}')
@@ -663,9 +661,6 @@ class PatchichiPatchbayManager(PatchbayManager):
                     gpos_dict['port_types_view'] = PortTypesViewFlag.ALL.value
 
                 self.views.add_old_json_gpos(gpos_dict)
-
-        
-        self.portgroups_memory = portgroups_mem_from_json(portgroups)
         
         self._prevent_next_editor_update = True
         self.main_win.ui.plainTextEditPorts.setPlainText(editor_text)
