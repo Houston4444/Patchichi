@@ -298,9 +298,13 @@ class PatchichiPatchbayManager(PatchbayManager):
         # remember also group positions and portgroups
 
         if group_renamed:
-            for gpos in self.group_positions:
-                if gpos.group_name == group_renamed[0]:
-                    gpos.group_name = group_renamed[1]
+            for view_data in self.views.values():
+                for ptv_dict in view_data.ptvs.values():
+                    gpos = ptv_dict.get(group_renamed[0])
+                    if gpos is not None:
+                        gpos.group_name = group_renamed[1]
+                        ptv_dict[group_renamed[1]] = \
+                            ptv_dict.pop(group_renamed[0])
             
             for ptype_dict in self.portgroups_memory.values():
                 if group_renamed[0] not in ptype_dict.keys():
@@ -616,13 +620,12 @@ class PatchichiPatchbayManager(PatchbayManager):
             _logger.error(f'Failed to open file "{str(path)}", {str(e)}')
             return False
 
-        self.views.clear()
         self.portgroups_memory.clear()
 
         editor_text: str = json_dict.get('editor_text')
         connections: list[tuple[str, str]] = json_dict.get('connections')
         group_positions: list[dict] = json_dict.get('group_positions')
-        self.views.eat_json_list(json_dict.get('views'))
+        self.views.eat_json_list(json_dict.get('views'), clear=True)
         portgroups: dict[str, dict[str, dict[str, list]]] = \
             json_dict.get('portgroups')
         version: tuple[int, int] = json_dict.get('version')
@@ -630,9 +633,6 @@ class PatchichiPatchbayManager(PatchbayManager):
         _logger.info(f'Loading file {str(path)}')
             
         self.clear_all()
-
-        
-        self.view_number = 1
 
         for view_key in self.views.keys():
             # select the first view
@@ -644,8 +644,6 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         if (json_dict.get('views') is None
                 and isinstance(group_positions, list)):
-            self.views[self.view_number] = {}
-
             higher_ptv_int = (PortTypesViewFlag.AUDIO
                               | PortTypesViewFlag.MIDI
                               | PortTypesViewFlag.CV).value
@@ -666,11 +664,7 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                 self.views.add_old_json_gpos(gpos_dict)
 
-        else:
-            self.views.add_view(view_num=self.view_number)
-
-        self.sg.views_changed.emit()
-
+        
         self.portgroups_memory = portgroups_mem_from_json(portgroups)
         
         self._prevent_next_editor_update = True
@@ -680,6 +674,10 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         for port_out_name, port_in_name in connections:
             self.add_connection(port_out_name, port_in_name)
+
+        self.sg.views_changed.emit()
+        self.view_number = self.views.first_view_num()
+        self.change_view(self.view_number)
 
         return True
 
