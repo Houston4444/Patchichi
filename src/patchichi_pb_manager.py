@@ -616,10 +616,13 @@ class PatchichiPatchbayManager(PatchbayManager):
             _logger.error(f'Failed to open file "{str(path)}", {str(e)}')
             return False
 
+        self.views.clear()
+        self.portgroups_memory.clear()
+
         editor_text: str = json_dict.get('editor_text')
         connections: list[tuple[str, str]] = json_dict.get('connections')
         group_positions: list[dict] = json_dict.get('group_positions')
-        views: dict = json_dict.get('views')
+        self.views.eat_json_list(json_dict.get('views'))
         portgroups: dict[str, dict[str, dict[str, list]]] = \
             json_dict.get('portgroups')
         version: tuple[int, int] = json_dict.get('version')
@@ -628,95 +631,19 @@ class PatchichiPatchbayManager(PatchbayManager):
             
         self.clear_all()
 
-        self.group_positions.clear()
-        self.portgroups_memory.clear()
-        self.views.clear()
+        
         self.view_number = 1
 
-        if isinstance(views, list):
-            indexes = set[int]()
-            missing_indexes = set[int]()
-            
-            # first check for missing or duplicate indexes
-            for v_dict in views:
-                if not isinstance(v_dict, dict):
-                    _logger.warning('View is not a dict')
-                    continue
-                
-                index = v_dict.get('index')
-                if not isinstance(index, int) or index in indexes:
-                    missing_indexes.add(views.index(v_dict))
-                else:
-                    indexes.add(index)
+        for view_key in self.views.keys():
+            # select the first view
+            self.view_number = view_key
+            break
+        else:
+            # no views in the file, write an empty view
+            self.views.add_view(view_num=self.view_number)
 
-            if missing_indexes:
-                missing_list = sorted(missing_indexes)
-                for i in missing_list:
-                    index = i + 1
-                    while index in indexes:
-                        index += 1
-                    self.views[i]['index'] = index
-                    indexes.add(index)
-            
-            # now we can assume all views have an index
-            # let's parse the list of dicts
-            for v_dict in views:
-                if not isinstance(v_dict, dict):
-                    continue
-                
-                view_number = v_dict['index']
-                self.views[view_number] = {}
-                name = v_dict.get('name')
-                port_types_str = v_dict.get('default_port_types')
-                is_white_list = v_dict.get('is_white_list')
-                
-                if isinstance(name, str):
-                    self.write_view_data(view_number, name=name)
-
-                if isinstance(port_types_str, str):
-                    default_port_types = PortTypesViewFlag.from_config_str(
-                        port_types_str)
-                    self.write_view_data(
-                        view_number, port_types=default_port_types)
-
-                if is_white_list is not None:
-                   self.write_view_data(
-                       view_number, white_list_view=bool(is_white_list)) 
-                
-                for ptv_str, ptv_dict in v_dict.items():
-                    if not isinstance(ptv_dict, dict):
-                        continue
-                    
-                    if not (isinstance(ptv_str, str)):
-                        continue
-                    
-                    ptv = PortTypesViewFlag.from_config_str(ptv_str)
-                    if not ptv:
-                        continue
-                    
-                    self.views[view_number][ptv] = {}
-                    
-                    for group_name, gpos_dict in ptv_dict.items():
-                        if not isinstance(gpos_dict, dict):
-                            continue
-                        
-                        if not isinstance(group_name, str):
-                            continue
-                        
-                        self.views[view_number][ptv][group_name] = \
-                            GroupPos.from_new_dict(ptv, group_name, gpos_dict)
-
-            self.sort_views_by_index()
-
-            for view_key in self.views.keys():
-                # select the first view
-                self.view_number = view_key
-                break
-            else:
-                # no views in the file, write an empty view
-                self.views[self.view_number] = {}
-
-        elif isinstance(group_positions, list):
+        if (json_dict.get('views') is None
+                and isinstance(group_positions, list)):
             self.views[self.view_number] = {}
 
             higher_ptv_int = (PortTypesViewFlag.AUDIO
@@ -724,23 +651,23 @@ class PatchichiPatchbayManager(PatchbayManager):
                               | PortTypesViewFlag.CV).value
 
             for gpos_dict in group_positions:
+                if not isinstance(gpos_dict, dict):
+                    continue
+                
                 higher_ptv_int = max(
                     higher_ptv_int, gpos_dict['port_types_view'])
 
             for gpos_dict in group_positions:
+                if not isinstance(gpos_dict, dict):
+                    continue
+                
                 if gpos_dict['port_types_view'] == higher_ptv_int:
                     gpos_dict['port_types_view'] = PortTypesViewFlag.ALL.value
 
-                gpos = GroupPos.from_serialized_dict(gpos_dict)
-                ptv_dict = self.views[self.view_number].get(gpos.port_types_view)
-                if ptv_dict is None:
-                    ptv_dict = {}
-                    self.views[self.view_number][gpos.port_types_view] = ptv_dict
-                
-                ptv_dict[gpos.group_name] = gpos
+                self.views.add_old_json_gpos(gpos_dict)
 
         else:
-            self.views[self.view_number] = {}
+            self.views.add_view(view_num=self.view_number)
 
         self.sg.views_changed.emit()
 
