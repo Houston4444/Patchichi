@@ -342,7 +342,4 @@ class MainWindow(QMainWindow):
     
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
-
-        if (event.text().isdigit()
-                and event.modifiers() & Qt.KeyboardModifier.AltModifier):
-            self.patchbay_manager.change_view(int(event.text()))
+        self.patchbay_manager.key_press_event(event)
