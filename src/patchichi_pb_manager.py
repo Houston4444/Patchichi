@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING, Optional, Union
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QApplication
 
-from patchbay.base_elements import (
-    GroupPos, JackPortFlag, PortgroupMem, PortTypesViewFlag)
+from patchbay.patchcanvas.patshared import (
+    PortMode, PortType, PortTypesViewFlag)
+from patchbay.base_elements import JackPortFlag
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -23,15 +24,14 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PRETTY_NAME,
     JACK_METADATA_SIGNAL_TYPE)
 from patchbay.tools_widgets import JackAgnostic
-from patchbay.patchcanvas.init_values import PortMode, PortType
 from chichi_syntax import split_params
-
 from tools import get_code_root
 import xdg
 
 if TYPE_CHECKING:
     from main_win import MainWindow
     from patchichi import Main
+
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
