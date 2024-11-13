@@ -2,11 +2,11 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
-from PyQt5.QtWidgets import (
+from qtpy.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
     QBoxLayout, QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
-from PyQt5.QtGui import QKeyEvent, QResizeEvent
-from PyQt5.QtCore import Qt, pyqtSlot
+from qtpy.QtGui import QKeyEvent, QResizeEvent
+from qtpy.QtCore import Qt, Slot
 
 from about_dialog import AboutDialog
 from xdg import xdg_data_home
@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
 
         return False
     
-    @pyqtSlot()
+    @Slot()
     def _load_scene(self):
         ret, ok = QFileDialog.getOpenFileName(
             self,
@@ -278,7 +278,7 @@ class MainWindow(QMainWindow):
                 self.setWindowTitle(
                     f"Patchichi - {scene_name}")
     
-    @pyqtSlot()
+    @Slot()
     def _save_scene(self):
         if self._current_path is None:
             self._save_scene_as()
@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
             # TODO error dialog
             pass
     
-    @pyqtSlot()
+    @Slot()
     def _save_scene_as(self):
         ret, ok = QFileDialog.getSaveFileName(
             self,
@@ -305,7 +305,7 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(
                 f"Patchichi - {scene_name}")
 
-    @pyqtSlot()
+    @Slot()
     def _show_editor_help(self):
         if HAS_WEB_ENGINE:
             dialog = EditorHelpDialog(self)

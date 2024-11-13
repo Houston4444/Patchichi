@@ -7,6 +7,10 @@ To install Patchichi, simply run as usual: <br/>
 `$ make` <br/>
 `$ [sudo] make install`
 
+if you prefer to build it with Qt6, run instead: <br/>
+`$ QT_VERSION=6 make` <br/>
+`$ [sudo] make install`
+
 depending of the distribution you'll need to use LRELEASE variable to install.
 If you don't have 'lrelease' executable but 'lrelease-qt5' use:
 `$ make LRELEASE=lrelease-qt5` <br/>
@@ -26,13 +30,18 @@ To uninstall Patchichi, run: <br/>
 ===== BUILD DEPENDENCIES =====
 --------------------------------
 The required build dependencies are: <i>(devel packages of these)</i>
-
- - PyQt5
- - Qt5 dev tools 
+ - python3-qtpy
+ - PyQt5 or PyQt6
+ - Qt5 or Qt6 dev tools 
  - qtchooser
 
 On Debian and Ubuntu, use these commands to install all build dependencies: <br/>
-`$ sudo apt-get install python3-pyqt5 pyqt5-dev-tools qtchooser qttools5-dev-tools`
+
+to build it with Qt5:
+`$ sudo apt-get install python3-qtpy python3-pyqt5 pyqt5-dev-tools qtchooser qttools5-dev-tools`
+
+to build it with Qt6:
+`$ sudo apt-get install python3-qtpy python3-pyqt6 pyqt6-dev-tools qtchooser`
 
 ===== RUNTIME DEPENDENCIES =====
 --------------------------------

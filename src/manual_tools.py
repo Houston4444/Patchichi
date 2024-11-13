@@ -3,8 +3,8 @@
 from pathlib import Path
 import subprocess
 
-from PyQt5.QtWidgets import QWidget, QMessageBox, QApplication
-from PyQt5.QtCore import QLocale
+from qtpy.QtWidgets import QWidget, QMessageBox, QApplication
+from qtpy.QtCore import QLocale
 
 _translate = QApplication.translate
 

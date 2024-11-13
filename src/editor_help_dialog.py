@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from PyQt5.QtWidgets import QDialog
+from qtpy.QtWidgets import QDialog
 
 from manual_tools import open_in_browser, get_manual_path
 

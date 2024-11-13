@@ -3,8 +3,8 @@
 APP_TITLE = 'Patchichi'
 VERSION = (0, 3, 0)
 
-from json import load
 import sys
+
 
 # manage arguments now
 # Yes, that is not conventional to do this kind of code during imports
@@ -28,6 +28,11 @@ for arg in sys.argv[1:]:
     if not scene_to_load:
         scene_to_load = arg
 
+import os
+from qt_api import QT_API
+
+# Needed for qtpy to know if it should use PyQt5 or PyQt6
+os.environ['QT_API'] = QT_API
 
 import signal
 import logging
@@ -36,9 +41,9 @@ from dataclasses import dataclass
 from os.path import dirname
 from pathlib import Path
 
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon, QFontDatabase
-from PyQt5.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
+from qtpy.QtWidgets import QApplication
+from qtpy.QtGui import QIcon, QFontDatabase
+from qtpy.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
 
 from main_win import MainWindow
 from patchichi_pb_manager import PatchichiPatchbayManager

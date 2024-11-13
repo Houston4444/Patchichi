@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QDialog, QApplication
+from qtpy.QtWidgets import QDialog, QApplication
 from ui.about_patchichi import Ui_DialogAboutPatchichi
 
 class AboutDialog(QDialog):

@@ -6,6 +6,7 @@
 
 #UI builds
 /src/ui/*.py
+/src/qt_api.py
 
 #resources qt build
 /src/resources_rc.py

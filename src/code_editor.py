@@ -1,12 +1,12 @@
 
 from enum import Enum
 from telnetlib import LINEMODE
-from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QCompleter, QApplication
-from PyQt5.QtGui import (
+from qtpy.QtWidgets import QPlainTextEdit, QWidget, QCompleter, QApplication
+from qtpy.QtGui import (
     QPaintEvent, QColor, QPainter, QResizeEvent, QFocusEvent,
     QKeyEvent,
     QTextCursor, QSyntaxHighlighter, QTextCharFormat, QTextDocument)
-from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
+from qtpy.QtCore import Qt, QRect, QSize, Signal
 
 from chichi_syntax import split_params, PRE_ATTRIBUTES, POST_ATTRIBUTES
 
@@ -39,8 +39,8 @@ LIGHT_SCHEME = {
 # https://doc.qt.io/qt-6/qtwidgets-widgets-codeeditor-example.html
 
 class CodeEditor(QPlainTextEdit):
-    cursor_on_port = pyqtSignal(str)
-    cursor_on_group = pyqtSignal(str)
+    cursor_on_port = Signal(str)
+    cursor_on_group = Signal(str)
     
     def __init__(self, parent):
         super().__init__(parent)
@@ -307,7 +307,7 @@ class CodeEditor(QPlainTextEdit):
                 
         super().keyPressEvent(event)
         
-        ctrl_or_shift = modifiers & Qt.ControlModifier or modifiers & Qt.ShiftModifier
+        ctrl_or_shift = modifiers & Qt.KeyboardModifier.ControlModifier or modifiers & Qt.KeyboardModifier.ShiftModifier
         if not self._completer or (ctrl_or_shift and not(event.text())):
             return
         
