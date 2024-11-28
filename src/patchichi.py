@@ -29,6 +29,11 @@ for arg in sys.argv[1:]:
         scene_to_load = arg
 
 import os
+from pathlib import Path
+
+# set HoustonPatchbay submodule as lib
+sys.path.insert(1, str(Path(__file__).parents[1] / 'HoustonPatchbay'))
+
 from qt_api import QT_API
 
 # Needed for qtpy to know if it should use PyQt5 or PyQt6

@@ -137,21 +137,20 @@ install:
 #	# Copy patchbay themes
 	cp -r HoustonPatchbay/themes $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 	cp -r HoustonPatchbay/manual $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
+	cp -r HoustonPatchbay/patchbay $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 
 # 	# Install main code
 	cp -r src $(DEST_PATCHICHI)/
-	rm $(DEST_PATCHICHI)/src/patchbay
-	cp -r $(PATCHBAY_DIR)/patchbay $(DEST_PATCHICHI)/src/
 	
 # 	# compile python files
 	$(PYTHON) -m compileall $(DEST_PATCHICHI)/src/
+	$(PYTHON) -m compileall $(DEST_PATCHICHI)/patchbay/
 	
 # 	# install local manual
 # 	cp -r manual $(DEST_PATCHICHI)/
 		
 #   # install main bash scripts to bin
-	install -m 755 data/patchichi  $(DESTDIR)$(PREFIX)/bin/
-	sed -i "s?X-PREFIX-X?$(PREFIX)?" $(DESTDIR)$(PREFIX)/bin/patchichi
+	install -m 755 data/bin/patchichi  $(DESTDIR)$(PREFIX)/bin/
 
 # 	# Install Translations
 	install -m 644 locale/*.qm $(DEST_PATCHICHI)/locale/
