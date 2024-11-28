@@ -1,11 +1,11 @@
 
 from enum import Enum
-from telnetlib import LINEMODE
+
 from qtpy.QtWidgets import QPlainTextEdit, QWidget, QCompleter, QApplication
 from qtpy.QtGui import (
     QPaintEvent, QColor, QPainter, QResizeEvent, QFocusEvent,
-    QKeyEvent,
-    QTextCursor, QSyntaxHighlighter, QTextCharFormat, QTextDocument)
+    QKeyEvent, QTextCursor, QSyntaxHighlighter,
+    QTextCharFormat, QTextDocument)
 from qtpy.QtCore import Qt, QRect, QSize, Signal
 
 from chichi_syntax import split_params, PRE_ATTRIBUTES, POST_ATTRIBUTES

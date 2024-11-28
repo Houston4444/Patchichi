@@ -24,8 +24,8 @@ from patchbay.patchbay_manager import (
     JACK_METADATA_PRETTY_NAME,
     JACK_METADATA_SIGNAL_TYPE)
 from patchbay.tools_widgets import JackAgnostic
+
 from chichi_syntax import split_params
-from tools import get_code_root
 import xdg
 
 if TYPE_CHECKING:
@@ -153,8 +153,8 @@ class PatchichiPatchbayManager(PatchbayManager):
     def _setup_canvas(self):
         SUBMODULE = 'HoustonPatchbay'
         THEME_PATH = Path(SUBMODULE) / 'themes'
-        source_theme_path = Path(get_code_root()) / THEME_PATH
-        manual_path = Path(get_code_root()) / SUBMODULE / 'manual'
+        source_theme_path = Path(__file__).parents[1] / THEME_PATH
+        manual_path = Path(__file__).parents[1] / SUBMODULE / 'manual'
         theme_paths = list[Path]()
         
         app_title = QApplication.applicationName().lower()

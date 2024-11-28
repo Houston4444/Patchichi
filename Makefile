@@ -149,7 +149,7 @@ install:
 # 	# install local manual
 # 	cp -r manual $(DEST_PATCHICHI)/
 		
-#   # install main bash scripts to bin
+#   # install launcher to bin
 	install -m 755 data/bin/patchichi  $(DESTDIR)$(PREFIX)/bin/
 
 # 	# Install Translations

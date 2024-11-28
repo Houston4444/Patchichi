@@ -1,4 +1,8 @@
 
+# This file is not used by the program
+# It is just a file written for some tests,
+# It could be removed, it will be soon.
+
 import time
 from typing import Callable, Any
 import json

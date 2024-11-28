@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
+
 from qtpy.QtWidgets import (
     QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
     QBoxLayout, QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
@@ -31,6 +32,7 @@ except ImportError:
 
 if TYPE_CHECKING:
     from patchichi import Main
+
 
 _translate = QApplication.translate
 
