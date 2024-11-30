@@ -602,7 +602,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         main.main_win._tools_widgets.set_jack_agnostic(JackAgnostic.FULL)
         self.set_tools_widget(main.main_win._tools_widgets)
         self.set_options_dialog(
-            CanvasOptionsDialog(self.main_win, self, self._settings))
+            CanvasOptionsDialog(self.main_win, self))
                 
     def save_file_to(self, path: Path) -> bool:
         _logger.info(f'saving file {str(path)}')

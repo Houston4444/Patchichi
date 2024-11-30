@@ -339,6 +339,7 @@ class MainWindow(QMainWindow):
             self.settings.setValue(
                 'tool_bar/jack_elements',
                 tools_displayed.to_save_string())
+            self.patchbay_manager.save_settings()
     
         super().closeEvent(event)
     
