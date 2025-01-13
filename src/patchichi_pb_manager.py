@@ -10,19 +10,14 @@ from qtpy.QtWidgets import QApplication
 
 from patchbay.patchcanvas.patshared import (
     PortMode, PortType, PortTypesViewFlag)
-from patchbay.base_elements import JackPortFlag
+from patchbay.base_elements import JackMetadata, JackPortFlag
 from patchbay import (
     CanvasMenu,
     Callbacker,
     CanvasOptionsDialog,
     PatchbayManager,
     Group)
-from patchbay.patchbay_manager import (
-    JACK_METADATA_ICON_NAME,
-    JACK_METADATA_ORDER,
-    JACK_METADATA_PORT_GROUP,
-    JACK_METADATA_PRETTY_NAME,
-    JACK_METADATA_SIGNAL_TYPE)
+
 from patchbay.tools_widgets import JackAgnostic
 
 from chichi_syntax import split_params
@@ -486,7 +481,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                             continue
                         
                         self.metadata_update(
-                            port_uuid, JACK_METADATA_ORDER, port_order)
+                            port_uuid, JackMetadata.ORDER, port_order)
                     
                     elif param.startswith('PRETTY_NAME='):
                         if not port_uuid:
@@ -495,7 +490,7 @@ class PatchichiPatchbayManager(PatchbayManager):
   
                         self.metadata_update(
                             port_uuid,
-                            JACK_METADATA_PRETTY_NAME,
+                            JackMetadata.PRETTY_NAME,
                             param.partition('=')[2])
             else:
                 if not group_name:
@@ -531,19 +526,19 @@ class PatchichiPatchbayManager(PatchbayManager):
                     if gp_icon_name:
                         self.metadata_update(
                             group_uuid,
-                            JACK_METADATA_ICON_NAME,
+                            JackMetadata.ICON_NAME,
                             gp_icon_name)
 
                 if portgroup:
                     self.metadata_update(
                         port_uuid,
-                        JACK_METADATA_PORT_GROUP,
+                        JackMetadata.PORT_GROUP,
                         portgroup)
                     
                 if signal_type:
                     self.metadata_update(
                         port_uuid,
-                        JACK_METADATA_SIGNAL_TYPE,
+                        JackMetadata.SIGNAL_TYPE,
                         signal_type)
         
         for group in self.groups:
