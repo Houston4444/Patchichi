@@ -32,7 +32,7 @@ import os
 from pathlib import Path
 
 # set HoustonPatchbay submodule as lib
-sys.path.insert(1, str(Path(__file__).parents[1] / 'HoustonPatchbay'))
+sys.path.insert(1, str(Path(__file__).parents[1] / 'HoustonPatchbay/source'))
 
 from qt_api import QT_API
 

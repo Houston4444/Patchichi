@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional, Union
 from qtpy.QtCore import QSettings
 from qtpy.QtWidgets import QApplication
 
-from patchbay.patchcanvas.patshared import (
+from patshared import (
     PortMode, PortType, PortTypesViewFlag)
 from patchbay.base_elements import JackMetadata, JackPortFlag
 from patchbay import (
