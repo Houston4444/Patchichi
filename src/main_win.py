@@ -13,14 +13,14 @@ from about_dialog import AboutDialog
 from xdg import xdg_data_home
 from manual_tools import get_manual_path, open_in_browser
 
-from patchbay.view_selector_frame import ViewSelectorWidget
-from patchbay.type_filter_frame import TypeFilterFrame
+from patchbay.widgets.view_selector_frame import ViewSelectorWidget
+from patchbay.widgets.type_filter_frame import TypeFilterFrame
+from patchbay.widgets.bar_widget_transport import BarWidgetTransport
+from patchbay.widgets.bar_widget_jack import BarWidgetJack
+from patchbay.widgets.bar_widget_canvas import BarWidgetCanvas
 from patchbay.surclassed_widgets import ZoomSlider
 from patchbay.tools_widgets import PatchbayToolsWidget, TextWithIcons
-from patchbay.bar_widget_transport import BarWidgetTransport
-from patchbay.bar_widget_jack import BarWidgetJack
-from patchbay.bar_widget_canvas import BarWidgetCanvas
-from patchbay.base_elements import ToolDisplayed
+from patchbay.bases.elements import ToolDisplayed
 
 from ui.main_win import Ui_MainWindow
 

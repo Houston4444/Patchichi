@@ -9,8 +9,8 @@ from qtpy.QtCore import QSettings
 from qtpy.QtWidgets import QApplication
 
 from patshared import (
-    PortMode, PortType, PortTypesViewFlag)
-from patchbay.base_elements import JackMetadata, JackPortFlag
+    PortMode, PortType, PortTypesViewFlag, JackMetadata)
+from patchbay.bases.elements import JackPortFlag
 from patchbay import (
     CanvasMenu,
     Callbacker,
