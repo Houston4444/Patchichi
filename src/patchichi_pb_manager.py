@@ -572,7 +572,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         if icon_name is not None:
             group.client_icon = icon_name
             if '.' in group.name:
-                group.display_name = group.name.partition('.')[2]
+                group.graceful_name = group.name.partition('.')[2]
 
     def select_port(self, full_port_name: str):
         port = self.get_port_from_name(full_port_name)
