@@ -10,7 +10,7 @@ from qtpy.QtWidgets import QApplication
 
 from patshared import (
     PortMode, PortType, PortTypesViewFlag, JackMetadata)
-from patchbay.bases.elements import JackPortFlag
+from patchbay.bases.elements import CanvasOptimize, CanvasOptimizeIt, JackPortFlag
 from patchbay import (
     CanvasMenu,
     Callbacker,
@@ -388,182 +388,184 @@ class PatchichiPatchbayManager(PatchbayManager):
         # the patchbay elements are fully remade.
         
         self.clear_all()
-        self.optimize_operation(True)
-        self.very_fast_operation = True
+        # self.optimize_operation(True)
+        # self.very_fast_operation = True
         
-        group_guis = dict[str, bool]()
-        
-        for line in text.splitlines():
-            line_n += 1
+        with CanvasOptimizeIt(self, CanvasOptimize.VERY_FAST):
+            group_guis = dict[str, bool]()
             
-            if not line.strip():
-                continue
-            
-            if line.startswith('::'):
-                tmp_group_name = line[2:]
-                if tmp_group_name in group_names_added:
-                    _log(f'"{tmp_group_name}" group has been already added !!!')
+            for line in text.splitlines():
+                line_n += 1
+                
+                if not line.strip():
                     continue
-                elif not tmp_group_name:
-                    _log(f" group name is empty !")
+                
+                if line.startswith('::'):
+                    tmp_group_name = line[2:]
+                    if tmp_group_name in group_names_added:
+                        _log(f'"{tmp_group_name}" group has been already added !!!')
+                        continue
+                    elif not tmp_group_name:
+                        _log(f" group name is empty !")
 
-                group_name = tmp_group_name
-                portgroup = ''
-                signal_type = ''
-                gp_icon_name = ''
-                port_type = PortType.AUDIO_JACK
-                port_mode = PortMode.OUTPUT
-                port_flags = 0
+                    group_name = tmp_group_name
+                    portgroup = ''
+                    signal_type = ''
+                    gp_icon_name = ''
+                    port_type = PortType.AUDIO_JACK
+                    port_mode = PortMode.OUTPUT
+                    port_flags = 0
 
-            elif line.startswith(':'):
-                for param, *args in split_params(line):
-                    if param == 'AUDIO':
-                        port_type = PortType.AUDIO_JACK
-                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                    elif param == 'MIDI':
-                        port_type = PortType.MIDI_JACK
-                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                    elif param == 'CV':
-                        port_type = PortType.AUDIO_JACK
-                        port_flags |= JackPortFlag.IS_CONTROL_VOLTAGE
-                    elif param == 'ALSA':
-                        port_type = PortType.MIDI_ALSA
-                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                    elif param == 'VIDEO':
-                        port_type = PortType.VIDEO
-                        port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                    elif param == 'OUTPUT':
-                        port_mode = PortMode.OUTPUT
-                    elif param == 'INPUT':
-                        port_mode = PortMode.INPUT
-                    elif param == 'MONITOR':
-                        port_flags |= JackPortFlag.CAN_MONITOR
-                    elif param == '~MONITOR':
-                        port_flags &= ~JackPortFlag.CAN_MONITOR
-                    elif param == 'TERMINAL':
-                        port_flags |= JackPortFlag.IS_TERMINAL
-                    elif param == '~TERMINAL':
-                        port_flags &= ~JackPortFlag.IS_TERMINAL
-                    elif param == 'PHYSICAL':
-                        port_flags |= JackPortFlag.IS_PHYSICAL
-                    elif param == '~PHYSICAL':
-                        port_flags &= ~JackPortFlag.IS_PHYSICAL
+                elif line.startswith(':'):
+                    for param, *args in split_params(line):
+                        if param == 'AUDIO':
+                            port_type = PortType.AUDIO_JACK
+                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                        elif param == 'MIDI':
+                            port_type = PortType.MIDI_JACK
+                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                        elif param == 'CV':
+                            port_type = PortType.AUDIO_JACK
+                            port_flags |= JackPortFlag.IS_CONTROL_VOLTAGE
+                        elif param == 'ALSA':
+                            port_type = PortType.MIDI_ALSA
+                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                        elif param == 'VIDEO':
+                            port_type = PortType.VIDEO
+                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                        elif param == 'OUTPUT':
+                            port_mode = PortMode.OUTPUT
+                        elif param == 'INPUT':
+                            port_mode = PortMode.INPUT
+                        elif param == 'MONITOR':
+                            port_flags |= JackPortFlag.CAN_MONITOR
+                        elif param == '~MONITOR':
+                            port_flags &= ~JackPortFlag.CAN_MONITOR
+                        elif param == 'TERMINAL':
+                            port_flags |= JackPortFlag.IS_TERMINAL
+                        elif param == '~TERMINAL':
+                            port_flags &= ~JackPortFlag.IS_TERMINAL
+                        elif param == 'PHYSICAL':
+                            port_flags |= JackPortFlag.IS_PHYSICAL
+                        elif param == '~PHYSICAL':
+                            port_flags &= ~JackPortFlag.IS_PHYSICAL
 
-                    elif param.startswith('PORTGROUP='):
-                        portgroup = param.partition('=')[2]
-                    elif param == '~PORTGROUP':
-                        portgroup = ''
+                        elif param.startswith('PORTGROUP='):
+                            portgroup = param.partition('=')[2]
+                        elif param == '~PORTGROUP':
+                            portgroup = ''
 
-                    elif param.startswith('SIGNAL_TYPE='):
-                        signal_type = param.partition('=')[2]
-                    elif param == '~SIGNAL_TYPE':
-                        signal_type = ''
+                        elif param.startswith('SIGNAL_TYPE='):
+                            signal_type = param.partition('=')[2]
+                        elif param == '~SIGNAL_TYPE':
+                            signal_type = ''
 
-                    # after group params
-                    elif param == 'GUI_HIDDEN':
-                        group_guis[group_name] = False
-                    elif param == 'GUI_VISIBLE':
-                        group_guis[group_name] = True
-                    elif param.startswith('CLIENT_ICON='):
-                        self._gp_client_icons[group_name] = param.rpartition('=')[2]
-                    elif param.startswith('ICON_NAME='):
-                        gp_icon_name = param.partition('=')[2]
+                        # after group params
+                        elif param == 'GUI_HIDDEN':
+                            group_guis[group_name] = False
+                        elif param == 'GUI_VISIBLE':
+                            group_guis[group_name] = True
+                        elif param.startswith('CLIENT_ICON='):
+                            self._gp_client_icons[group_name] = param.rpartition('=')[2]
+                        elif param.startswith('ICON_NAME='):
+                            gp_icon_name = param.partition('=')[2]
 
-                    # after port params
-                    elif param.startswith('ORDER='):
-                        if not port_uuid:
-                            _log('ORDER affected to no port')
-                            continue
+                        # after port params
+                        elif param.startswith('ORDER='):
+                            if not port_uuid:
+                                _log('ORDER affected to no port')
+                                continue
+                            
+                            port_order = param.partition('=')[2]
+                            if not port_order.isdigit():
+                                _log(f'ORDER "{port_order}" is not digits')
+                                continue
+                            
+                            self.metadata_update(
+                                port_uuid, JackMetadata.ORDER, port_order)
                         
-                        port_order = param.partition('=')[2]
-                        if not port_order.isdigit():
-                            _log(f'ORDER "{port_order}" is not digits')
-                            continue
-                        
-                        self.metadata_update(
-                            port_uuid, JackMetadata.ORDER, port_order)
+                        elif param.startswith('PRETTY_NAME='):
+                            if not port_uuid:
+                                _log('PRETTY_NAME affected to no port')
+                                continue
+    
+                            self.metadata_update(
+                                port_uuid,
+                                JackMetadata.PRETTY_NAME,
+                                param.partition('=')[2])
+                else:
+                    if not group_name:
+                        _log('No group name set')
+                        continue
                     
-                    elif param.startswith('PRETTY_NAME='):
-                        if not port_uuid:
-                            _log('PRETTY_NAME affected to no port')
-                            continue
-  
+                    full_port_name = f"{group_name}:{line}"
+                    
+                    if port_type is PortType.MIDI_ALSA:
+                        if port_mode is PortMode.OUTPUT:
+                            full_port_name = ":ALSA_OUT:0:0:" + full_port_name
+                        else:
+                            full_port_name = ":ALSA_IN:0:0:" + full_port_name
+
+                    if full_port_name in added_ports:
+                        _log(f'Port "{full_port_name}" is already present !')
+                        continue
+
+                    added_ports.add(full_port_name)
+
+                    port_uuid += 1
+                    group_id = self.add_port(
+                        full_port_name,
+                        port_type.value,
+                        int(port_flags | port_mode),
+                        port_uuid)
+                    
+                    if group_id not in groups_added:
+                        groups_added.add(group_id)
+                        group_uuid += 1
+                        self.set_group_uuid_from_name(group_name, group_uuid)
+
+                        if gp_icon_name:
+                            self.metadata_update(
+                                group_uuid,
+                                JackMetadata.ICON_NAME,
+                                gp_icon_name)
+
+                    if portgroup:
                         self.metadata_update(
                             port_uuid,
-                            JackMetadata.PRETTY_NAME,
-                            param.partition('=')[2])
-            else:
-                if not group_name:
-                    _log('No group name set')
-                    continue
-                
-                full_port_name = f"{group_name}:{line}"
-                
-                if port_type is PortType.MIDI_ALSA:
-                    if port_mode is PortMode.OUTPUT:
-                        full_port_name = ":ALSA_OUT:0:0:" + full_port_name
-                    else:
-                        full_port_name = ":ALSA_IN:0:0:" + full_port_name
-
-                if full_port_name in added_ports:
-                    _log(f'Port "{full_port_name}" is already present !')
-                    continue
-
-                added_ports.add(full_port_name)
-
-                port_uuid += 1
-                group_id = self.add_port(
-                    full_port_name,
-                    port_type.value,
-                    int(port_flags | port_mode),
-                    port_uuid)
-                
-                if group_id not in groups_added:
-                    groups_added.add(group_id)
-                    group_uuid += 1
-                    self.set_group_uuid_from_name(group_name, group_uuid)
-
-                    if gp_icon_name:
+                            JackMetadata.PORT_GROUP,
+                            portgroup)
+                        
+                    if signal_type:
                         self.metadata_update(
-                            group_uuid,
-                            JackMetadata.ICON_NAME,
-                            gp_icon_name)
+                            port_uuid,
+                            JackMetadata.SIGNAL_TYPE,
+                            signal_type)
+            
+            for group in self.groups:
+                visible = group_guis.get(group.name)
+                if visible is not None:
+                    group.set_optional_gui_state(visible)
+            
+            for group in self.groups:
+                group.sort_ports_in_canvas()
+            
+            for port_out_full_name, port_in_full_name in tuple_conns:
+                if (port_out_full_name in added_ports
+                        and port_in_full_name in added_ports):
+                    self.add_connection(port_out_full_name, port_in_full_name)
+        
+        # self.very_fast_operation = False
 
-                if portgroup:
-                    self.metadata_update(
-                        port_uuid,
-                        JackMetadata.PORT_GROUP,
-                        portgroup)
-                    
-                if signal_type:
-                    self.metadata_update(
-                        port_uuid,
-                        JackMetadata.SIGNAL_TYPE,
-                        signal_type)
-        
-        for group in self.groups:
-            visible = group_guis.get(group.name)
-            if visible is not None:
-                group.set_optional_gui_state(visible)
-         
-        for group in self.groups:
-            group.sort_ports_in_canvas()
-         
-        for port_out_full_name, port_in_full_name in tuple_conns:
-            if (port_out_full_name in added_ports
-                    and port_in_full_name in added_ports):
-                self.add_connection(port_out_full_name, port_in_full_name)
-        
-        self.very_fast_operation = False
-
-        for group in self.groups:
-            group.add_all_ports_to_canvas()
-        
-        for connection in self.connections:
-            connection.add_to_canvas()
+        with CanvasOptimizeIt(self, auto_redraw=True):
+            for group in self.groups:
+                group.add_all_ports_to_canvas()
+            
+            for connection in self.connections:
+                connection.add_to_canvas()
                 
-        self.optimize_operation(False)
-        self.redraw_all_groups()
+        # self.optimize_operation(False)
+        # self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
     
