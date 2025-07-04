@@ -554,18 +554,14 @@ class PatchichiPatchbayManager(PatchbayManager):
                 if (port_out_full_name in added_ports
                         and port_in_full_name in added_ports):
                     self.add_connection(port_out_full_name, port_in_full_name)
-        
-        # self.very_fast_operation = False
 
         with CanvasOptimizeIt(self, auto_redraw=True):
             for group in self.groups:
+                group.add_to_canvas()
                 group.add_all_ports_to_canvas()
             
             for connection in self.connections:
                 connection.add_to_canvas()
-                
-        # self.optimize_operation(False)
-        # self.redraw_all_groups()
         
         self.main_win.set_logs_text('\n'.join(log_lines))
     
