@@ -515,10 +515,10 @@ class PatchichiPatchbayManager(PatchbayManager):
                     port_uuid += 1
                     group_id = self.add_port(
                         full_port_name,
-                        port_type.value,
+                        port_type,
                         int(port_flags | port_mode),
                         port_uuid)
-                    
+
                     if group_id not in groups_added:
                         groups_added.add(group_id)
                         group_uuid += 1
