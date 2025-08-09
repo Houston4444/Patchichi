@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -u
 
 APP_TITLE = 'Patchichi'
-VERSION = (0, 3, 0)
+VERSION = (0, 4, 0)
 
 import sys
 
