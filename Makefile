@@ -152,14 +152,14 @@ install:
 #	# Copy patchbay themes
 	cp -r HoustonPatchbay/themes $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 	cp -r HoustonPatchbay/manual $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
-	cp -r HoustonPatchbay/patchbay $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
+	cp -r HoustonPatchbay/source $(DEST_PATCHICHI)/$(PATCHBAY_DIR)/
 
 # 	# Install main code
 	cp -r src $(DEST_PATCHICHI)/
 	
 # 	# compile python files
+	$(PYTHON) -m compileall $(DEST_PATCHICHI)/HoustonPatchbay/source/
 	$(PYTHON) -m compileall $(DEST_PATCHICHI)/src/
-	$(PYTHON) -m compileall $(DEST_PATCHICHI)/patchbay/
 	
 # 	# install local manual
 # 	cp -r manual $(DEST_PATCHICHI)/
