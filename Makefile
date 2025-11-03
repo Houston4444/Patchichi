@@ -37,7 +37,7 @@ ifeq ($(QT_VERSION), 6)
 		LRELEASE := lrelease-qt6
 	endif
 else
-    QT_API ?= PyQt5
+	QT_API ?= PyQt5
 	PYUIC ?= pyuic5
 	PYLUPDATE ?= pylupdate5
 	ifeq (, $(shell which $(LRELEASE)))
@@ -54,7 +54,7 @@ ICON_SIZES := 16 24 32 48 64 96 128 256
 
 PYTHON := python3
 ifeq (, $(shell which $(PYTHON)))
-  PYTHON := python
+	PYTHON := python
 endif
 
 PATCHBAY_DIR=HoustonPatchbay
