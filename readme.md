@@ -15,3 +15,6 @@ The idea here is to have an editable patchbay, totally abstract and not related 
 * Help debugging users, they can export a scene from Patchance/RaySession and import it in Patchichi
 * Can also be used directly by user to make fastly a patch (for example to explain a guitar pedalboard)
 * Yes, it is a niche software ;)
+
+## Install:
+read [INSTALL.md](INSTALL.md)
