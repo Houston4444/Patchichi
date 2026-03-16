@@ -86,20 +86,20 @@ class PatchichiCallbacker(Callbacker):
         if TYPE_CHECKING:
             self.mng = manager
         
-    def _ports_connect(self, group_out_id: int, port_out_id: int,
+    def ports_connect(self, group_out_id: int, port_out_id: int,
                        group_in_id: int, port_in_id: int):
         port_out = self.mng.get_port_from_id(group_out_id, port_out_id)
         port_in = self.mng.get_port_from_id(group_in_id, port_in_id)
         self.mng.add_connection(port_out.full_name, port_in.full_name)
 
-    def _ports_disconnect(self, connection_id: int):
+    def ports_disconnect(self, connection_id: int):
         for conn in self.mng.connections:
             if conn.connection_id == connection_id:
                 self.mng.remove_connection(
                     conn.port_out.full_name, conn.port_in.full_name)
                 break
             
-    def _group_selected(self, group_id: int, splitted_mode: PortMode):
+    def group_selected(self, group_id: int, splitted_mode: PortMode):
         group = self.mng.get_group_from_id(group_id)
         if group is None:
             return
