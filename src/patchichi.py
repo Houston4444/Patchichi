@@ -3,30 +3,46 @@
 APP_TITLE = 'Patchichi'
 VERSION = (0, 5, 0)
 
+from enum import Enum, auto
 import sys
+
+
+class ReadArg(Enum):
+    NONE = auto()
+    SCENE = auto()
+    DBG = auto()
+    INFO = auto()
 
 
 # manage arguments now
 # Yes, that is not conventional to do this kind of code during imports
 # but it allows faster answer for --version argument.
 scene_to_load = ''
+info_str = ''
+debug_str = ''
+read_arg = ReadArg.SCENE
 
 for arg in sys.argv[1:]:
-    if arg == '--version':
-        sys.stdout.write('.'.join([str(i) for i in VERSION]) + '\n')
-        sys.exit(0)
-    if arg == '--help':
-        sys.stdout.write(
-            "Abstract JACK patchbay application\n"
-            "Usage: patchichi [--help] [--version]\n"
-            "   or: patchichi SCENE_NAME\n"
-            "  --help     show this help\n"
-            "  --version  print program version\n"
-        )
-        sys.exit(0)
-    
-    if not scene_to_load:
-        scene_to_load = arg
+    match arg:
+        case '--version':
+            sys.stdout.write('.'.join([str(i) for i in VERSION]) + '\n')
+            sys.exit(0)
+        case '--help':
+            from help_message import HELP_MESSAGE
+            sys.stdout.write(HELP_MESSAGE)
+            sys.exit(0)
+        case '--dbg'|'-dbg':
+            read_arg = ReadArg.DBG
+        case '--info'|'-info':
+            read_arg = ReadArg.INFO
+        case _:
+            match read_arg:
+                case ReadArg.DBG:
+                    debug_str = arg
+                case ReadArg.INFO:
+                    info_str = arg
+                case ReadArg.SCENE:
+                    scene_to_load = arg
 
 import os
 from pathlib import Path
@@ -52,6 +68,24 @@ from qtpy.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
 
 from main_win import MainWindow
 from patchichi_pb_manager import PatchichiPatchbayManager
+
+
+_logger = logging.getLogger()
+_log_handler = logging.StreamHandler()
+_log_handler.setFormatter(logging.Formatter(
+    f"%(levelname)s:%(name)s - %(message)s"))
+_logger.addHandler(_log_handler)
+
+if info_str:
+    for module_name in info_str.split(':'):
+        _mod_logger = logging.getLogger(module_name)
+        _mod_logger.setLevel(logging.INFO)
+
+if debug_str:
+    for module_name in debug_str.split(':'):
+        _mod_logger = logging.getLogger(module_name)
+        _mod_logger.setLevel(logging.DEBUG)
+
 
 
 @dataclass
