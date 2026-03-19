@@ -30,10 +30,6 @@ Theme:
 
     border ports-side pour le hardware (portholes)
 
-CAD:
-    Avant toute chose, gérer patchichi --dbg et --info.
-    BoxWidget et fonctions séparées plutôt que héritage inutile
-    fonction pour le background
-    gérer les paths du header et autres dans draw_painter_path
 
-    après, la suite.
+dessiner les painterpath en fonction de la bordure unselected
+definir quelque chose de bien configurable pour les borders
