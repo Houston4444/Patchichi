@@ -388,9 +388,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         # the patchbay elements are fully remade.
         
         self.clear_all()
-        # self.optimize_operation(True)
-        # self.very_fast_operation = True
-        
+
         with CanvasOptimizeIt(self, CanvasOptimize.VERY_FAST):
             group_guis = dict[str, bool]()
             
@@ -403,7 +401,8 @@ class PatchichiPatchbayManager(PatchbayManager):
                 if line.startswith('::'):
                     tmp_group_name = line[2:]
                     if tmp_group_name in group_names_added:
-                        _log(f'"{tmp_group_name}" group has been already added !!!')
+                        _log(f'"{tmp_group_name}" group '
+                             'has been already added !!!')
                         continue
                     elif not tmp_group_name:
                         _log(f" group name is empty !")
@@ -418,81 +417,82 @@ class PatchichiPatchbayManager(PatchbayManager):
 
                 elif line.startswith(':'):
                     for param, *args in split_params(line):
-                        if param == 'AUDIO':
-                            port_type = PortType.AUDIO_JACK
-                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                        elif param == 'MIDI':
-                            port_type = PortType.MIDI_JACK
-                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                        elif param == 'CV':
-                            port_type = PortType.AUDIO_JACK
-                            port_flags |= JackPortFlag.IS_CONTROL_VOLTAGE
-                        elif param == 'ALSA':
-                            port_type = PortType.MIDI_ALSA
-                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                        elif param == 'VIDEO':
-                            port_type = PortType.VIDEO
-                            port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
-                        elif param == 'OUTPUT':
-                            port_mode = PortMode.OUTPUT
-                        elif param == 'INPUT':
-                            port_mode = PortMode.INPUT
-                        elif param == 'MONITOR':
-                            port_flags |= JackPortFlag.CAN_MONITOR
-                        elif param == '~MONITOR':
-                            port_flags &= ~JackPortFlag.CAN_MONITOR
-                        elif param == 'TERMINAL':
-                            port_flags |= JackPortFlag.IS_TERMINAL
-                        elif param == '~TERMINAL':
-                            port_flags &= ~JackPortFlag.IS_TERMINAL
-                        elif param == 'PHYSICAL':
-                            port_flags |= JackPortFlag.IS_PHYSICAL
-                        elif param == '~PHYSICAL':
-                            port_flags &= ~JackPortFlag.IS_PHYSICAL
+                        match param:
+                            case 'AUDIO':
+                                port_type = PortType.AUDIO_JACK
+                                port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                            case 'MIDI':
+                                port_type = PortType.MIDI_JACK
+                                port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                            case 'CV':
+                                port_type = PortType.AUDIO_JACK
+                                port_flags |= JackPortFlag.IS_CONTROL_VOLTAGE
+                            case 'ALSA':
+                                port_type = PortType.MIDI_ALSA
+                                port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                            case 'VIDEO':
+                                port_type = PortType.VIDEO
+                                port_flags &= ~JackPortFlag.IS_CONTROL_VOLTAGE
+                            case 'OUTPUT':
+                                port_mode = PortMode.OUTPUT
+                            case 'INPUT':
+                                port_mode = PortMode.INPUT
+                            case 'MONITOR':
+                                port_flags |= JackPortFlag.CAN_MONITOR
+                            case '~MONITOR':
+                                port_flags &= ~JackPortFlag.CAN_MONITOR
+                            case 'TERMINAL':
+                                port_flags |= JackPortFlag.IS_TERMINAL
+                            case '~TERMINAL':
+                                port_flags &= ~JackPortFlag.IS_TERMINAL
+                            case 'PHYSICAL':
+                                port_flags |= JackPortFlag.IS_PHYSICAL
+                            case '~PHYSICAL':
+                                port_flags &= ~JackPortFlag.IS_PHYSICAL
+                            case s if s.startswith('PORTGROUP='):
+                                portgroup = param.partition('=')[2]
+                            case '~PORTGROUP':
+                                portgroup = ''
 
-                        elif param.startswith('PORTGROUP='):
-                            portgroup = param.partition('=')[2]
-                        elif param == '~PORTGROUP':
-                            portgroup = ''
+                            case s if s.startswith('SIGNAL_TYPE='):
+                                signal_type = param.partition('=')[2]
+                            case '~SIGNAL_TYPE':
+                                signal_type = ''
 
-                        elif param.startswith('SIGNAL_TYPE='):
-                            signal_type = param.partition('=')[2]
-                        elif param == '~SIGNAL_TYPE':
-                            signal_type = ''
+                            # after group params
+                            case 'GUI_HIDDEN':
+                                group_guis[group_name] = False
+                            case 'GUI_VISIBLE':
+                                group_guis[group_name] = True
+                            case s if s.startswith('CLIENT_ICON='):
+                                self._gp_client_icons[group_name] = \
+                                    param.rpartition('=')[2]
+                            case s if s.startswith('ICON_NAME='):
+                                gp_icon_name = param.partition('=')[2]
 
-                        # after group params
-                        elif param == 'GUI_HIDDEN':
-                            group_guis[group_name] = False
-                        elif param == 'GUI_VISIBLE':
-                            group_guis[group_name] = True
-                        elif param.startswith('CLIENT_ICON='):
-                            self._gp_client_icons[group_name] = param.rpartition('=')[2]
-                        elif param.startswith('ICON_NAME='):
-                            gp_icon_name = param.partition('=')[2]
-
-                        # after port params
-                        elif param.startswith('ORDER='):
-                            if not port_uuid:
-                                _log('ORDER affected to no port')
-                                continue
+                            # after port params
+                            case s if s.startswith('ORDER='):
+                                if not port_uuid:
+                                    _log('ORDER affected to no port')
+                                    continue
+                                
+                                port_order = param.partition('=')[2]
+                                if not port_order.isdigit():
+                                    _log(f'ORDER "{port_order}" is not digits')
+                                    continue
+                                
+                                self.metadata_update(
+                                    port_uuid, JackMetadata.ORDER, port_order)
                             
-                            port_order = param.partition('=')[2]
-                            if not port_order.isdigit():
-                                _log(f'ORDER "{port_order}" is not digits')
-                                continue
-                            
-                            self.metadata_update(
-                                port_uuid, JackMetadata.ORDER, port_order)
-                        
-                        elif param.startswith('PRETTY_NAME='):
-                            if not port_uuid:
-                                _log('PRETTY_NAME affected to no port')
-                                continue
-    
-                            self.metadata_update(
-                                port_uuid,
-                                JackMetadata.PRETTY_NAME,
-                                param.partition('=')[2])
+                            case s if s.startswith('PRETTY_NAME='):
+                                if not port_uuid:
+                                    _log('PRETTY_NAME affected to no port')
+                                    continue
+        
+                                self.metadata_update(
+                                    port_uuid,
+                                    JackMetadata.PRETTY_NAME,
+                                    param.partition('=')[2])
                 else:
                     if not group_name:
                         _log('No group name set')
