@@ -31,5 +31,7 @@ Theme:
     border ports-side pour le hardware (portholes)
 
 
-dessiner les painterpath en fonction de la bordure unselected
 definir quelque chose de bien configurable pour les borders
+
+résoudre les thumbnail peut-être bien en supprimant ça et en se basant sur les alias
+    du coup rendre obligatoire: audio midi alsa cv video
