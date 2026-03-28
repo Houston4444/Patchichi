@@ -123,8 +123,6 @@ class PatchichiCallbacker(Callbacker):
                 if line == '::' + gp_name:
                     self.mng.main_win.ui.plainTextEditPorts.move_cursor_to_line(i)
                     break
-            
-            
 
 
 class PatchichiPatchbayManager(PatchbayManager):
