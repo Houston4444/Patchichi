@@ -57,7 +57,8 @@ class MainWindow(QMainWindow):
         if TYPE_CHECKING:
             assert isinstance(self.menu_button, QToolButton)
 
-        self.menu_button.setPopupMode(QToolButton.InstantPopup)
+        self.menu_button.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup)
         self.menu_button.setMenu(self.main_menu)
         
         self.ui.filterFrame.setVisible(False)
@@ -101,8 +102,8 @@ class MainWindow(QMainWindow):
         splitter_handle = self.ui.splitterPortsVsLogs.handle(1)
         layout = QVBoxLayout(splitter_handle)
         self._splitter_line = QFrame(splitter_handle)
-        self._splitter_line.setFrameShape(QFrame.HLine)
-        self._splitter_line.setFrameShadow(QFrame.Sunken)
+        self._splitter_line.setFrameShape(QFrame.Shape.HLine)
+        self._splitter_line.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addWidget(self._splitter_line)
         
         self.ui.graphicsView.setFocus()
@@ -164,10 +165,11 @@ class MainWindow(QMainWindow):
         default_disp_str = self.settings.value(
             'tool_bar/jack_elements', '', type=str)
         
-        main.patchbay_manager._tools_widget.change_text_with_icons(
-            text_with_icons)
-        main.patchbay_manager._tools_widget.change_tools_displayed(
-            default_disp_widg.filtered_by_string(default_disp_str))
+        tools_widget = main.patchbay_manager._tools_widget
+        if tools_widget is not None:
+            tools_widget.change_text_with_icons(text_with_icons)
+            tools_widget.change_tools_displayed(
+                default_disp_widg.filtered_by_string(default_disp_str))
 
     def _menubar_shown_toggled(self, state: int):
         self.ui.menubar.setVisible(bool(state))
@@ -254,6 +256,9 @@ class MainWindow(QMainWindow):
         else:
             scene_path = self._get_scenes_path() / f'{scene_name}.patchichi.json'
         
+        if self.patchbay_manager is None:
+            return False
+        
         if self.patchbay_manager.load_file(scene_path):
             self._current_path = scene_path
             scene_name = self._current_path.name.rpartition(
@@ -272,7 +277,7 @@ class MainWindow(QMainWindow):
             str(self._get_scenes_path()),
             _translate('file_dialog', 'Patchichi files (*.patchichi.json)'))
 
-        if ok:
+        if ok and self.patchbay_manager is not None:
             if self.patchbay_manager.load_file(Path(ret)):
                 self._current_path = Path(ret)
                 scene_name = self._current_path.name.rpartition(
@@ -284,6 +289,9 @@ class MainWindow(QMainWindow):
     def _save_scene(self):
         if self._current_path is None:
             self._save_scene_as()
+            return
+        
+        if self.patchbay_manager is None:
             return
         
         if not self.patchbay_manager.save_file_to(self._current_path):
@@ -299,6 +307,9 @@ class MainWindow(QMainWindow):
             _translate('file_dialog', 'Patchichi files (*.patchichi.json)'))
 
         if not ok:
+            return
+
+        if self.patchbay_manager is None:
             return
 
         if self.patchbay_manager.save_file_to(Path(ret)):
@@ -321,28 +332,30 @@ class MainWindow(QMainWindow):
         self._tools_widgets.main_win_resize(self)
 
     def closeEvent(self, event):
-        self.settings.setValue('MainWindow/geometry', self.saveGeometry())
-        self.settings.setValue(
-            'MainWindow/splitter_canvas_sizes',
-            self.ui.splitterMainVsCanvas.sizes())
-        self.settings.setValue(
-            'MainWindow/splitter_portlogs_sizes',
-            self.ui.splitterPortsVsLogs.sizes())
-        
-        if self.patchbay_manager is not None:
+        if self.settings is not None:
+            self.settings.setValue('MainWindow/geometry', self.saveGeometry())
             self.settings.setValue(
-                'tool_bar/text_with_icons',
-                self.patchbay_manager._tools_widget._text_with_icons.name)
+                'MainWindow/splitter_canvas_sizes',
+                self.ui.splitterMainVsCanvas.sizes())
+            self.settings.setValue(
+                'MainWindow/splitter_portlogs_sizes',
+                self.ui.splitterPortsVsLogs.sizes())
+            
+            if self.patchbay_manager is not None:
+                tools_widget = self.patchbay_manager._tools_widget
+                if tools_widget is not None:
+                    self.settings.setValue(
+                        'tool_bar/text_with_icons',
+                        tools_widget._text_with_icons.name)
 
-            tools_displayed = \
-                self.patchbay_manager._tools_widget._tools_displayed
-            self.settings.setValue(
-                'tool_bar/jack_elements',
-                tools_displayed.to_save_string())
-            self.patchbay_manager.save_settings()
+                    self.settings.setValue(
+                        'tool_bar/jack_elements',
+                        tools_widget._tools_displayed.to_save_string())
+                self.patchbay_manager.save_settings()
     
         super().closeEvent(event)
     
     def keyPressEvent(self, event: QKeyEvent):
         super().keyPressEvent(event)
-        self.patchbay_manager.key_press_event(event)
+        if self.patchbay_manager is not None:
+            self.patchbay_manager.key_press_event(event)

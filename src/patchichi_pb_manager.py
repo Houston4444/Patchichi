@@ -90,6 +90,9 @@ class PatchichiCallbacker(Callbacker):
                        group_in_id: int, port_in_id: int):
         port_out = self.mng.get_port_from_id(group_out_id, port_out_id)
         port_in = self.mng.get_port_from_id(group_in_id, port_in_id)
+        if port_out is None or port_in is None:
+            _logger.warning('ports_connect with unfounded ports !')
+            return
         self.mng.add_connection(port_out.full_name, port_in.full_name)
 
     def ports_disconnect(self, connection_id: int):
@@ -128,7 +131,7 @@ class PatchichiCallbacker(Callbacker):
 class PatchichiPatchbayManager(PatchbayManager):
     main_win: 'MainWindow'
     
-    def __init__(self, settings: Union[QSettings, None] =None):
+    def __init__(self, settings: QSettings):
         super().__init__(settings)
         self._settings = settings
         
@@ -163,7 +166,7 @@ class PatchichiPatchbayManager(PatchbayManager):
                 theme_paths.append(path)
 
         self.app_init(self.main_win.ui.graphicsView,
-                      theme_paths,
+                      tuple(theme_paths),
                       manual_path=manual_path,
                       callbacker=PatchichiCallbacker(self),
                       default_theme_name='Yellow Boards')
@@ -375,6 +378,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         gp_icon_name = ''
         group_uuid = 0
         portgroup = ''
+        signal_type = ''
         port_type = PortType.AUDIO_JACK
         port_mode = PortMode.OUTPUT
         port_flags = JackPortFlag.IS_OUTPUT
@@ -553,7 +557,9 @@ class PatchichiPatchbayManager(PatchbayManager):
                         and port_in_full_name in added_ports):
                     self.add_connection(port_out_full_name, port_in_full_name)
 
-        with CanvasOptimizeIt(self, auto_redraw=True):
+        # no need to make full repulsion now,
+        # it will be done after view change
+        with CanvasOptimizeIt(self, auto_redraw=True, prevent_overlap=False):
             for group in self.groups:
                 group.add_to_canvas()
                 group.add_all_ports_to_canvas()
@@ -600,6 +606,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         
         self.export_to_patchichi_json(
             path, self.main_win.get_editor_text())
+        return True
 
     def load_file(self, path: Path) -> bool:
         try:
@@ -612,12 +619,12 @@ class PatchichiPatchbayManager(PatchbayManager):
 
         self.portgroups_memory.clear()
 
-        editor_text: str = json_dict.get('editor_text')
-        connections: list[tuple[str, str]] = json_dict.get('connections')
-        group_positions: list[dict] = json_dict.get('group_positions')
+        editor_text: str = json_dict.get('editor_text', '')
+        connections: list[tuple[str, str]] = json_dict.get('connections', [])
+        group_positions: list[dict] = json_dict.get('group_positions', [])
         self.views.eat_json_list(json_dict.get('views'), clear=True)
         self.portgroups_memory.eat_json(json_dict.get('portgroups'))
-        version: tuple[int, int] = json_dict.get('version')
+        version: tuple[int, int] = json_dict.get('version', (0, 0))
 
         _logger.info(f'Loading file {str(path)}')
             

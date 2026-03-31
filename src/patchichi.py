@@ -5,6 +5,7 @@ VERSION = (0, 5, 0)
 
 from enum import Enum, auto
 import sys
+from typing import TYPE_CHECKING
 
 
 class ReadArg(Enum):
@@ -131,14 +132,20 @@ def main_loop():
         app.installTranslator(app_translator)
 
     patchbay_translator = QTranslator()
-    if patchbay_translator.load(QLocale(), 'patchbay',
-                                '_', "%s/HoustonPatchbay/locale" % get_code_root()):
+    if patchbay_translator.load(
+            QLocale(), 'patchbay',
+            '_', "%s/HoustonPatchbay/locale" % get_code_root()):
         app.installTranslator(patchbay_translator)
 
     sys_translator = QTranslator()
-    path_sys_translations = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
-    if sys_translator.load(QLocale(), 'qt', '_', path_sys_translations):
-        app.installTranslator(sys_translator)
+    if QT_API != 'PyQt5' or TYPE_CHECKING:
+        path_sys_translations = QLibraryInfo.path(
+            QLibraryInfo.LibraryPath.TranslationsPath)
+    else:
+        path_sys_translations = QLibraryInfo.location(
+            QLibraryInfo.TranslationsPath)
+    sys_translator.load(path_sys_translations)
+    app.installTranslator(sys_translator)
 
     QFontDatabase.addApplicationFont(":/fonts/Ubuntu-R.ttf")
     QFontDatabase.addApplicationFont(":/fonts/Ubuntu-C.ttf")
