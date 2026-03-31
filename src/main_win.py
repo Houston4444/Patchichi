@@ -3,22 +3,21 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from qt_api import QT_API
 from qtpy.QtWidgets import (
-    QMainWindow, QShortcut, QMenu, QApplication, QToolButton, QFileDialog,
-    QBoxLayout, QVBoxLayout, QFrame, QSpacerItem, QSizePolicy, QWidget)
+    QMainWindow, QMenu, QApplication, QToolButton, QFileDialog,
+    QVBoxLayout, QFrame)
 from qtpy.QtGui import QKeyEvent, QResizeEvent
 from qtpy.QtCore import Qt, Slot
+if QT_API != 'PyQt5' or TYPE_CHECKING:
+    from qtpy.QtGui import QShortcut
+else:
+    from qtpy.QtWidgets import QShortcut
 
 from about_dialog import AboutDialog
 from xdg import xdg_data_home
 from manual_tools import get_manual_path, open_in_browser
 
-from patchbay.widgets.view_selector_frame import ViewSelectorWidget
-from patchbay.widgets.type_filter_frame import TypeFilterFrame
-from patchbay.widgets.bar_widget_transport import BarWidgetTransport
-from patchbay.widgets.bar_widget_jack import BarWidgetJack
-from patchbay.widgets.bar_widget_canvas import BarWidgetCanvas
-from patchbay.surclassed_widgets import ZoomSlider
 from patchbay.tools_widgets import PatchbayToolsWidget, TextWithIcons
 from patchbay.bases.elements import ToolDisplayed
 
@@ -73,15 +72,15 @@ class MainWindow(QMainWindow):
         self.ui.toolButtonEditorHelp.clicked.connect(self._show_editor_help)
 
         filter_bar_shortcut = QShortcut('Ctrl+F', self)
-        filter_bar_shortcut.setContext(Qt.ApplicationShortcut)
+        filter_bar_shortcut.setContext(Qt.ShortcutContext.ApplicationShortcut)
         filter_bar_shortcut.activated.connect(
             self.toggle_filter_frame_visibility)
         
         refresh_shortcut = QShortcut('Ctrl+R', self)
-        refresh_shortcut.setContext(Qt.ApplicationShortcut)
+        refresh_shortcut.setContext(Qt.ShortcutContext.ApplicationShortcut)
         refresh_shortcut.activated.connect(self.refresh_patchbay)
         refresh_shortcut_alt = QShortcut('F5', self)
-        refresh_shortcut_alt.setContext(Qt.ApplicationShortcut)
+        refresh_shortcut_alt.setContext(Qt.ShortcutContext.ApplicationShortcut)
         refresh_shortcut_alt.activated.connect(self.refresh_patchbay)
         
         self._normal_screen_maximized = False
