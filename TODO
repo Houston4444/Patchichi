@@ -10,28 +10,19 @@ events
 
 patchbay:
 
-Centrage du texte des boîtes:
-    compte lla bordure ou pas ?
-        en fait ça dépend de la couleur du header
 
 Theme:
     supprimer au maximum les literals arbitraires (remplacer par du padding ?)
 
-    gui_button:
-        permettre la redéfinition de text-color pour le titre de la boîte
-    
-    header:
-        gérer le QRectF en amont avec draw_painter_path
-            gérer la suppression du background principal dessous ?
-            gérer background2
         gérer margin et padding
 
     set_ports_y_pos: attention au margin.bottom du header du coup
 
     border ports-side pour le hardware (portholes)
 
-
-definir quelque chose de bien configurable pour les borders
-
-résoudre les thumbnail peut-être bien en supprimant ça et en se basant sur les alias
-    du coup rendre obligatoire: audio midi alsa cv video
+mesurer le temps de chargement complet du theme: 2ms, pas de problème
+des enum pour BorderMode et Align
+bouton GUI du theme Terminal pas tiptop
+le dbg qui fonctionne mal
+retester la bordure malsaine du header
+Essayer de reduire le borders-side du pour audio (bof c bien)

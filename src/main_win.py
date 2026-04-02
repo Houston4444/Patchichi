@@ -8,7 +8,7 @@ from qtpy.QtWidgets import (
     QMainWindow, QMenu, QApplication, QToolButton, QFileDialog,
     QVBoxLayout, QFrame)
 from qtpy.QtGui import QKeyEvent, QResizeEvent
-from qtpy.QtCore import Qt, Slot
+from qtpy.QtCore import Qt, Slot # type:ignore
 if QT_API != 'PyQt5' or TYPE_CHECKING:
     from qtpy.QtGui import QShortcut
 else:
