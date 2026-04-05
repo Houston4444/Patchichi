@@ -16,13 +16,9 @@ Theme:
 
         gérer margin et padding
 
-    set_ports_y_pos: attention au margin.bottom du header du coup
-
-    border ports-side pour le hardware (portholes)
+    set_ports_y_pos: attention au margin.bottom du header du coup (ça marche en fait)
 
 mesurer le temps de chargement complet du theme: 2ms, pas de problème
-des enum pour BorderMode et Align
-bouton GUI du theme Terminal pas tiptop
-le dbg qui fonctionne mal
-retester la bordure malsaine du header
-Essayer de reduire le borders-side du pour audio (bof c bien)
+Essayer de reduire le borders-side du port audio (bof c bien)
+Réduire la taille du fichier patchbay_manager si possible
+wrapper peut être mal placé sur PortHoles (pas tant !)

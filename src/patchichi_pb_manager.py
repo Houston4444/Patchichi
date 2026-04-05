@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 
 from qtpy.QtCore import QSettings
 from qtpy.QtWidgets import QApplication
@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
 
 MEMORY_FILE = 'canvas.json'
 
@@ -88,6 +87,9 @@ class PatchichiCallbacker(Callbacker):
         
     def ports_connect(self, group_out_id: int, port_out_id: int,
                        group_in_id: int, port_in_id: int):
+        _logger.info(
+            f'callbacker ports connect from {group_out_id}:{port_out_id} '
+            f'to {group_in_id}:{port_in_id}')
         port_out = self.mng.get_port_from_id(group_out_id, port_out_id)
         port_in = self.mng.get_port_from_id(group_in_id, port_in_id)
         if port_out is None or port_in is None:
@@ -96,6 +98,8 @@ class PatchichiCallbacker(Callbacker):
         self.mng.add_connection(port_out.full_name, port_in.full_name)
 
     def ports_disconnect(self, connection_id: int):
+        _logger.info(
+            f'callbacker ports_disconnect {connection_id}')
         for conn in self.mng.connections:
             if conn.connection_id == connection_id:
                 self.mng.remove_connection(
