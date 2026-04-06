@@ -8,17 +8,31 @@ about
 update editor by group ? -> later
 events
 
-patchbay:
+split by track:
+    Les groups restent intactes, mais contiennent une liste 'tracks'
+    qui peut contenir d'autres groupes.
+    La GroupPos du groupe principal va contenir les autres GroupPos dans la clé tracks.
+
+    L'algo du split:
+        n'enlève  pas les ports du groupe Main mais crée des copies dans les tracks.
+            Attention à l'id du port et au cnv_name
+        Un attribut bool 'in_track' permettra d'identifier si un port peut être ajouté
+        au canvas (s'il est dans le group Main)
+
+        retire les ports in_track du canvas
+        ajoute les tracks au canvas
+        ajoute les ports in_track au canvas
+
+    L'algo inverse:
+        retire les ports dans les tracks du canvas
+        retire les tracks du canvas
+        retire tous les ports du Main dans le canvas
+        remet tous les ports du Main dans le canvas
+
+    Ajouter un port ajoute le port à la track correspondante
+    renommer un port peut être complexe (à voir dans un second temps)
+    les portgroup devraient être simple à gérer sauf les cas de portgroup
+    entre 2 tracks qui ne doivent pas être mis dans les tracks
 
 
-Theme:
-    supprimer au maximum les literals arbitraires (remplacer par du padding ?)
 
-        gérer margin et padding
-
-    set_ports_y_pos: attention au margin.bottom du header du coup (ça marche en fait)
-
-mesurer le temps de chargement complet du theme: 2ms, pas de problème
-Essayer de reduire le borders-side du port audio (bof c bien)
-Réduire la taille du fichier patchbay_manager si possible
-wrapper peut être mal placé sur PortHoles (pas tant !)
