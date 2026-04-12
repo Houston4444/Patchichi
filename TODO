@@ -34,5 +34,19 @@ split by track:
     les portgroup devraient être simple à gérer sauf les cas de portgroup
     entre 2 tracks qui ne doivent pas être mis dans les tracks
 
+    Coton: gérer l'animation du split.
+    Gérer remove_port et rename_port
+    actions depuis la boîte track
+    OMG ! : Gérer white list et cachées peut être un vrai casse-tête
+        Pas de gpos pour une track veut dire pas de track.
+    
+    class Troup, Abstract class pour Group et Track
 
+callback group_hide_box semble ne pas servir (et par conséquent les fonctions utilisées)
+Attention à:
+    portgroups à cheval entre 2 tracks ou groups (non gérés pour l'instant)
+    tracks et hidden_indicator
+    chg de vue avec stratégies gros patchs et tracks
+
+Si possible, essayer de joindre au milieu de la boîte et non au topleft
 

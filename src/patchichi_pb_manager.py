@@ -566,6 +566,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         with CanvasOptimizeIt(self, auto_redraw=True, prevent_overlap=False):
             for group in self.groups:
                 group.add_to_canvas()
+                group.add_tracks_to_canvas()
                 group.add_all_ports_to_canvas()
             
             for connection in self.connections:
