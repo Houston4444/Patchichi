@@ -44,6 +44,7 @@ for arg in sys.argv[1:]:
                     info_str = arg
                 case ReadArg.SCENE:
                     scene_to_load = arg
+            read_arg = ReadArg.SCENE
 
 import os
 from pathlib import Path
