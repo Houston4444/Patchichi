@@ -46,7 +46,6 @@ callback group_hide_box semble ne pas servir (et par conséquent les fonctions u
 Attention à:
     portgroups à cheval entre 2 tracks ou groups (non gérés pour l'instant)
     tracks et hidden_indicator
-    chg de vue avec stratégies gros patchs et tracks
 
 Si possible, essayer de joindre au milieu de la boîte et non au topleft
-
+Putain, ça aurait été sans doute plus efficace de gérer les tracks dans le patchcanvas, mais ça veut dire presque tout revoir.
