@@ -12,7 +12,6 @@ from patshared import (
     PortMode, PortType, PortTypesViewFlag, JackMetadata)
 from patchbay.bases.elements import CanvasOptimize, CanvasOptimizeIt, JackPortFlag
 from patchbay import (
-    CanvasMenu,
     Callbacker,
     CanvasOptionsDialog,
     PatchbayManager,
@@ -21,6 +20,7 @@ from patchbay import (
 from patchbay.tools_widgets import JackAgnostic
 
 from chichi_syntax import split_params
+from chichi_canvas_menu import ChichiCanvasMenu
 import xdg
 
 if TYPE_CHECKING:
@@ -599,7 +599,7 @@ class PatchichiPatchbayManager(PatchbayManager):
         self.set_main_win(main.main_win)
         self._setup_canvas()
 
-        self.set_canvas_menu(CanvasMenu(self))
+        self.set_canvas_menu(ChichiCanvasMenu(self))
         self.set_filter_frame(main.main_win.ui.filterFrame)
         main.main_win._tools_widgets.set_jack_agnostic(JackAgnostic.FULL)
         self.set_tools_widget(main.main_win._tools_widgets)
