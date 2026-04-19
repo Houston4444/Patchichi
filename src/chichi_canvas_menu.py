@@ -19,23 +19,23 @@ class ChichiCanvasMenu(CanvasMenu):
     def _build(self):
         super()._build()
         
-        if 'tests_actions' in sys.modules:
-            del sys.modules['tests_actions']
-        import tests_actions
-        
-        self._tests_acts_menu = QMenu(self)
-        self._tests_acts_menu.setTitle('Special Actions')
-        
+        if 'strange_events' in sys.modules:
+            del sys.modules['strange_events']
+        import strange_events
+
+        self.strange_events_menu = QMenu(self)
+        self.strange_events_menu.setTitle('Strange events')
+
         for func in [
-                obj for name, obj in inspect.getmembers(tests_actions)
+                obj for name, obj in inspect.getmembers(strange_events)
                 if inspect.isfunction(obj)
-                    and obj.__module__ == tests_actions.__name__
+                    and obj.__module__ == strange_events.__name__
                     and not name.startswith('_')]:
-            _special_act = self._tests_acts_menu.addAction(func.__name__)
+            _special_act = self.strange_events_menu.addAction(func.__name__)
             _special_act.setData(func)
             _special_act.triggered.connect(self._special_act_triggered)
-        self.addMenu(self._tests_acts_menu)
-        
+        self.addMenu(self.strange_events_menu)
+
     @Slot()
     def _special_act_triggered(self):
         func = self.sender().data() # type:ignore

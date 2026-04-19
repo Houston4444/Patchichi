@@ -9,32 +9,11 @@ update editor by group ? -> later
 events
 
 split by track:
-    Les groups restent intactes, mais contiennent une liste 'tracks'
-    qui peut contenir d'autres groupes.
-    La GroupPos du groupe principal va contenir les autres GroupPos dans la clé tracks.
-
-    L'algo du split:
-        n'enlève  pas les ports du groupe Main mais crée des copies dans les tracks.
-            Attention à l'id du port et au cnv_name
-        Un attribut bool 'in_track' permettra d'identifier si un port peut être ajouté
-        au canvas (s'il est dans le group Main)
-
-        retire les ports in_track du canvas
-        ajoute les tracks au canvas
-        ajoute les ports in_track au canvas
-
-    L'algo inverse:
-        retire les ports dans les tracks du canvas
-        retire les tracks du canvas
-        retire tous les ports du Main dans le canvas
-        remet tous les ports du Main dans le canvas
-
     Ajouter un port ajoute le port à la track correspondante
     renommer un port peut être complexe (à voir dans un second temps)
     les portgroup devraient être simple à gérer sauf les cas de portgroup
     entre 2 tracks qui ne doivent pas être mis dans les tracks
 
-    Coton: gérer l'animation du split.
     Gérer remove_port et rename_port
     actions depuis la boîte track
     OMG ! : Gérer white list et cachées peut être un vrai casse-tête
@@ -49,3 +28,4 @@ Attention à:
 
 Si possible, essayer de joindre au milieu de la boîte et non au topleft
 Putain, ça aurait été sans doute plus efficace de gérer les tracks dans le patchcanvas, mais ça veut dire presque tout revoir.
+depuis le menu, les hidden tracks ne sont pas listées
