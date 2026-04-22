@@ -21,11 +21,6 @@ split by track:
     
     class Troup, Abstract class pour Group et Track
 
-callback group_hide_box semble ne pas servir (et par conséquent les fonctions utilisées)
-Attention à:
-    portgroups à cheval entre 2 tracks ou groups (non gérés pour l'instant)
-    tracks et hidden_indicator
 
 Si possible, essayer de joindre au milieu de la boîte et non au topleft
 Putain, ça aurait été sans doute plus efficace de gérer les tracks dans le patchcanvas, mais ça veut dire presque tout revoir.
-depuis le menu, les hidden tracks ne sont pas listées

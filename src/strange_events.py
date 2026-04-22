@@ -84,13 +84,32 @@ def remove_master(mng: 'PatchichiPatchbayManager'):
     mng.remove_port('Ardour:Master/audio_in 1')
     mng.remove_port('Ardour:Master/audio_in 2')
     # time.sleep(0.100)
-    mng.add_port('Ardour:Master/audio_out 1', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 456456)
-    mng.add_port('Ardour:Master/audio_out 2', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 456457)
-    mng.add_port('Ardour:Master/audio_in 1',  PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 456458)
-    mng.add_port('Ardour:Master/audio_in 2',  PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 456459)
+    mng.add_port('Ardour:Masterax/audio_out 1', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 456456)
+    mng.add_port('Ardour:Masterax/audio_out 2', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 456457)
+    mng.add_port('Ardour:Masterax/audio_in 1',  PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 456458)
+    mng.add_port('Ardour:Masterax/audio_in 2',  PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 456459)
     
 def add_ardour_track(mng: 'PatchichiPatchbayManager'):
     mng.add_port('Ardour:Malisk/audio_out 1', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 4564560)
     mng.add_port('Ardour:Malisk/audio_out 2', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 4564561)
     mng.add_port('Ardour:Malisk/audio_in 1', PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 4564562)
     mng.add_port('Ardour:Malisk/audio_in 2', PortType.AUDIO_JACK, JackPortFlag.IS_INPUT, 4564563)
+    
+def rename_master(mng: 'PatchichiPatchbayManager'):
+    port = mng.get_port_from_name('Ardour:Master/audio_out 1')
+    if port is None:
+        return
+    mng.rename_port('Ardour:Master/audio_out 1', 'Ardour:NewMaster/audio_out 1')
+    mng.rename_port('Ardour:Master/audio_out 2', 'Ardour:NewMaster/audio_out 2')
+    mng.rename_port('Ardour:Master/audio_in 1', 'Ardour:NewMaster/audio_in 1')
+    mng.rename_port('Ardour:Master/audio_in 2', 'Ardour:NewMaster/audio_in 2')
+    # mng.rename_port('Ardour:NewMaster/audio_out 1', 'Ardour:Master/audio_out 1')
+    # mng.rename_port('Ardour:NewMaster/audio_out 2', 'Ardour:Master/audio_out 2')
+    
+def portgroup_track(mng: 'PatchichiPatchbayManager'):
+    mng.add_port('Ardour:Mouslo_L/audio_out 1', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 987987)
+    mng.add_port('Ardour:Mouslo_R/audio_out 1', PortType.AUDIO_JACK, JackPortFlag.IS_OUTPUT, 987988)
+    mng.metadata_update(987987, JackMetadata.PORT_GROUP, 'Mouslo')
+    mng.metadata_update(987987, JackMetadata.ORDER, '97')
+    mng.metadata_update(987988, JackMetadata.PORT_GROUP, 'Mouslo')
+    mng.metadata_update(987988, JackMetadata.ORDER, '98')
