@@ -65,8 +65,10 @@ from os.path import dirname
 from pathlib import Path
 
 from qtpy.QtWidgets import QApplication
-from qtpy.QtGui import QIcon, QFontDatabase
+from qtpy.QtGui import QIcon
 from qtpy.QtCore import QLocale, QTranslator, QTimer, QLibraryInfo, QSettings
+
+import resourcer
 
 from main_win import MainWindow
 from patchichi_pb_manager import PatchichiPatchbayManager
@@ -148,8 +150,7 @@ def main_loop():
     sys_translator.load(path_sys_translations)
     app.installTranslator(sys_translator)
 
-    QFontDatabase.addApplicationFont(":/fonts/Ubuntu-R.ttf")
-    QFontDatabase.addApplicationFont(":/fonts/Ubuntu-C.ttf")
+    resourcer.install_fonts()
 
     #connect signals
     signal.signal(signal.SIGINT, signal_handler)
