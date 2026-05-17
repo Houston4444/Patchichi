@@ -118,14 +118,14 @@ def make_logger():
 def main_loop():
     make_logger()
     
-    import resources_rc
-    
+    resourcer.resources_paths.insert(
+        0, Path(__file__).parents[1] / 'resources')
+
     app = QApplication(sys.argv)
     app.setApplicationName(APP_TITLE)
     app.setApplicationVersion('.'.join([str(i) for i in VERSION]))
     app.setOrganizationName(APP_TITLE)
-    app.setWindowIcon(QIcon(
-        f':/main_icon/scalable/{APP_TITLE.lower()}.svg'))
+    app.setWindowIcon(resourcer.main_icon())
     app.setDesktopFileName(APP_TITLE.lower())
     
     ### Translation process

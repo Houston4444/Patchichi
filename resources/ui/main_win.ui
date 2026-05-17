@@ -405,10 +405,6 @@
    </property>
   </action>
   <action name="actionAboutPatchichi">
-   <property name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/main_icon/scalable/patchichi.svg</normaloff>:/main_icon/scalable/patchichi.svg</iconset>
-   </property>
    <property name="text">
     <string>About Patchichi</string>
    </property>
@@ -489,7 +485,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

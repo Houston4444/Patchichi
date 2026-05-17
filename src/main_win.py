@@ -14,6 +14,7 @@ if QT_API != 'PyQt5' or TYPE_CHECKING:
 else:
     from qtpy.QtWidgets import QShortcut
 
+import resourcer
 from about_dialog import AboutDialog
 from xdg import xdg_data_home
 from manual_tools import get_manual_path, open_in_browser
@@ -63,6 +64,7 @@ class MainWindow(QMainWindow):
         self.ui.filterFrame.setVisible(False)
         self.ui.actionShowMenuBar.toggled.connect(self._menubar_shown_toggled)
         self.ui.actionQuit.triggered.connect(QApplication.quit)
+        self.ui.actionAboutPatchichi.setIcon(resourcer.main_icon())
         self.ui.actionAboutPatchichi.triggered.connect(self._show_about_dialog)
         self.ui.actionAboutQt.triggered.connect(QApplication.aboutQt)
 
