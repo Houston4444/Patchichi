@@ -9,7 +9,6 @@ DEST_PATCHICHI := $(DESTDIR)$(PREFIX)/share/patchichi
 
 LINK = ln -s -f
 LRELEASE ?= lrelease
-RCC ?= rcc
 QT_VERSION ?= 6
 
 # if you set QT_VERSION environment variable to 5 at the make command
@@ -20,18 +19,6 @@ ifeq ($(QT_VERSION), 6)
 	QT_API ?= PyQt6
 	PYUIC ?= pyuic6
 	PYLUPDATE ?= pylupdate6
-	RCC_EXEC := $(shell which $(RCC))
-	RCC_QT6_DEB := /usr/lib/qt6/libexec/rcc
-
-	ifeq (, ${RCC_EXEC})
-		RCC := ${RCC_QT6_DEB}
-	else
-		ifeq ($(shell readlink ${RCC_EXEC}), qtchooser)
-			ifeq ($(shell test -x ${RCC_QT6_DEB} | echo $$?), 0)
-				RCC := ${RCC_QT6_DEB}
-			endif
-		endif
-	endif
 
 	ifeq (, $(shell which $(LRELEASE)))
 		LRELEASE := lrelease-qt6
@@ -61,7 +48,7 @@ PATCHBAY_DIR=HoustonPatchbay
 
 # ---------------------
 
-all: PATCHBAY QT_PREPARE UI RES LOCALE
+all: PATCHBAY QT_PREPARE UI LOCALE
 
 PATCHBAY:
 	@(cd $(PATCHBAY_DIR) && $(MAKE))
@@ -76,14 +63,6 @@ QT_PREPARE:
 		    resources/locale/*.qm src/resources_rc.py
     endif
 	install -d src/ui
-
-# ---------------------
-# Resources
-
-RES: src/resources_rc.py
-
-src/resources_rc.py: resources/resources.qrc
-	rcc -g python $< |sed 's/ PySide. / qtpy /' > $@
 
 # ---------------------
 # UI code
